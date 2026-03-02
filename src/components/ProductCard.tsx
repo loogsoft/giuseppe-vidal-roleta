@@ -27,14 +27,15 @@ type ProductProps = BaseProps & {
   name: string;
   description: string | undefined;
   category: ProductCategoryEnum;
-  price: string;
+  price: number | string;
   imageUrl: ImageResponse[];
   stock: number | undefined;
-  stockEnabled: boolean;
+  lowStock: number;
+  isActiveStock: boolean;
   available: boolean;
   onToggleAvailable?: (id: string) => void;
   navigateTo: string;
-  isActive: ProductStatusEnum;
+  status: ProductStatusEnum | undefined;
 };
 
 type SupplierProps = BaseProps & {
@@ -74,8 +75,8 @@ const getProductIcon = (value: string) => {
 
 export default function ProductCard(props: Props) {
   const navigate = useNavigate();
-  const status =
-    props.type === "supplier" ? ProductStatusEnum.ACTIVED : props.isActive;
+  const statusValue =
+    props.type === "supplier" ? ProductStatusEnum.ACTIVED : props.status;
 
   if (props.type === "supplier") {
     const supplierAvatarStyle = props.avatarColor
@@ -145,15 +146,30 @@ export default function ProductCard(props: Props) {
   }
 
   const statusLabel =
-    status === ProductStatusEnum.ACTIVED ? "ATIVO" : "INATIVO";
+    statusValue === ProductStatusEnum.ACTIVED ? "ATIVO" : "INATIVO";
   const productIcon = getProductIcon(`${props.name} ${props.category}`);
-
+  const productImageUrl =
+    props.imageUrl?.find((image) => image.isPrimary)?.url ??
+    props.imageUrl?.[0]?.url ??
+    "";
   return (
     <div className={`${styles.card} ${styles.productCard}`}>
       <div className={`${styles.media} ${styles.productMedia}`}>
-        <div className={`${styles.avatar} ${styles.productAvatar}`}>
-          <span className={styles.productIcon}>{productIcon}</span>
-        </div>
+        {props.stock && props.stock <= props.lowStock ? (
+          <div className={styles.lowStock}>ESTOQUE BAIXO</div>
+        ) : null}
+        {productImageUrl ? (
+          <img
+            className={styles.image}
+            src={productImageUrl}
+            alt={props.name}
+            loading="lazy"
+          />
+        ) : (
+          <div className={`${styles.avatar} ${styles.productAvatar}`}>
+            <span className={styles.productIcon}>{productIcon}</span>
+          </div>
+        )}
 
         <div className={styles.cardActions}>
           <button
@@ -197,11 +213,13 @@ export default function ProductCard(props: Props) {
           </div>
           <div className={styles.metaItem}>
             <FiBox className={styles.metaIcon} />
-            {props.stockEnabled ? `Estoque: ${props.stock ?? 0}` : "Estoque desativado"}
+            {props.isActiveStock
+              ? `Estoque: ${props.stock ?? 0}`
+              : "Estoque desativado"}
           </div>
         </div>
 
-        {!status ? <div className={styles.outOfStock}>SEM ESTOQUE</div> : null}
+        {!statusValue ? <div className={styles.outOfStock}>SEM ESTOQUE</div> : null}
       </div>
     </div>
   );

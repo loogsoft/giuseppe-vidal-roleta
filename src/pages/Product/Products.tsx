@@ -79,9 +79,10 @@ export function Products() {
 
   const filtered = useMemo(() => {
     let current = products;
-    
+
     // Filtro de categoria (select ou modal)
-    const categoryToFilter = filters.category !== "all" ? filters.category : activeCat;
+    const categoryToFilter =
+      filters.category !== "all" ? filters.category : activeCat;
     if (categoryToFilter !== "all") {
       const category = categoryFromKey(categoryToFilter);
       if (category) {
@@ -98,18 +99,22 @@ export function Products() {
     // Filtro de preço
     if (filters.minPrice) {
       const min = parseFloat(filters.minPrice);
-      current = current.filter((p) => parseFloat(p.price) >= min);
+      current = current.filter((p) => Number(p.price) >= min);
     }
     if (filters.maxPrice) {
       const max = parseFloat(filters.maxPrice);
-      current = current.filter((p) => parseFloat(p.price) <= max);
+      current = current.filter((p) => Number(p.price) <= max);
     }
 
     // Ordenação
     if (filters.sortBy === "price-asc") {
-      current = [...current].sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+      current = [...current].sort(
+        (a, b) => Number(a.price) - Number(b.price),
+      );
     } else if (filters.sortBy === "price-desc") {
-      current = [...current].sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+      current = [...current].sort(
+        (a, b) => Number(b.price) - Number(a.price),
+      );
     } else if (filters.sortBy === "name-asc") {
       current = [...current].sort((a, b) => a.name.localeCompare(b.name));
     }
@@ -168,13 +173,12 @@ export function Products() {
   }, [products]);
 
   const lowStock = useMemo(() => {
-    return products.filter((p) => p.stockEnabled && (p.stock ?? 0) <= 5).length;
+    return products.filter((p) => p.isActiveStock && (p.stock ?? 0) <= 5).length;
   }, [products]);
 
   const categoryTotal = useMemo(() => {
     return new Set(products.map((p) => p.category)).size;
   }, [products]);
-
 
   // const getPrimaryImageUrl = (images: ImageResponse[]) => {
   //   const primary = (images || []).find((img: any) => img?.isPrimary);
@@ -258,11 +262,7 @@ export function Products() {
           })}
           icon={<FiDollarSign />}
         />
-        <StatCard
-          label="CATEGORIAS"
-          value={categoryTotal}
-          icon={<FiGrid />}
-        />
+        <StatCard label="CATEGORIAS" value={categoryTotal} icon={<FiGrid />} />
       </div>
 
       <div className={styles.gridContainer}>
@@ -294,9 +294,9 @@ export function Products() {
                 </option>
               ))}
             </select>
-            <div style={{ position: 'relative' }}>
-              <button 
-                className={styles.filterBtn} 
+            <div style={{ position: "relative" }}>
+              <button
+                className={styles.filterBtn}
                 type="button"
                 onClick={() => setIsFilterModalOpen(true)}
               >
@@ -329,6 +329,7 @@ export function Products() {
           <div className={styles.grid}>
             {filtered.map((p) => (
               <ProductCard
+                lowStock={p.lowStock}
                 key={p.id}
                 id={p.id}
                 name={p.name}
@@ -336,8 +337,8 @@ export function Products() {
                 category={p.category}
                 price={p.price}
                 imageUrl={p.images}
-                isActive={p.isActive}
-                stockEnabled={p.stockEnabled}
+                status={p.status}
+                isActiveStock={p.isActiveStock}
                 stock={p.stock}
                 available
                 onEdit={() => {}}

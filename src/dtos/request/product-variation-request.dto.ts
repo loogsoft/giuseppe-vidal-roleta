@@ -5,4 +5,5 @@ export interface ProductVariationRequestDto {
   isActive?: boolean;
   color: string;
   size: string;
+  images?: File[];
 }

@@ -1,8 +1,7 @@
 .page {
-  height: 95vh;
+  min-height: 100%;
   background: var(--bg-primary);
   color: var(--text-primary);
-  overflow-y: auto;
 }
 
 .topbar {

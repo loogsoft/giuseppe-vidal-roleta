@@ -1,8 +1,7 @@
 .page {
   width: 100%;
   padding: 22px 24px 18px;
-  height: 95vh;
-  overflow-y: auto;
+  min-height: 100%;
   background: var(--bg-primary);
   color: var(--text-primary);
 }
@@ -86,6 +85,11 @@
   grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
   gap: 16px;
   align-items: start;
+}
+
+.imageGalleryAside {
+  position: sticky;
+  top: 20px;
 }
 
 .logoCard {
@@ -189,8 +193,8 @@
 
 .panelTitle {
   color: var(--text-primary);
-  font-weight: 900;
-  font-size: 13px;
+  font-weight: 600;
+  font-size: 22px;
 }
 
 .form {
@@ -282,4 +286,547 @@
     flex-direction: column;
     align-items: stretch;
   }
+}
+
+/* Variations List */
+.variationsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.removeVariationBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid rgba(239, 68, 68, 0.22);
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.removeVariationBtn:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.addVariationBtn {
+  width: 100%;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px dashed var(--highlight-primary);
+  background: rgba(246, 196, 15, 0.08);
+  color: var(--highlight-primary);
+  font-weight: 600;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.addVariationBtn:hover {
+  background: rgba(246, 196, 15, 0.12);
+}
+
+/* Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 999;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modalContent {
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-light);
+  flex-shrink: 0;
+}
+
+.modalTitle {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.modalCloseBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border-default);
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.modalCloseBtn:hover {
+  background: var(--hover-bg);
+}
+
+.modalBody {
+  padding: 20px 24px;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.uploadVariationBtn {
+  height: 40px;
+  border-radius: 12px;
+  border: 1px dashed var(--border-default);
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0 12px;
+  transition: all 0.15s ease;
+}
+
+.uploadVariationBtn:hover {
+  border-color: var(--highlight-primary);
+  color: var(--highlight-primary);
+}
+
+.imageHint {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.modalFooter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-light);
+  flex-shrink: 0;
+}
+
+.cancelBtn {
+  flex: 1;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--border-default);
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cancelBtn:hover {
+  background: var(--hover-bg);
+}
+
+.addBtn {
+  flex: 1;
+  height: 40px;
+  border-radius: 12px;
+  border: none;
+  background: #FFC83D;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: 0 12px 22px rgba(255, 200, 61, 0.25);
+  transition: all 0.15s ease;
+}
+
+.addBtn:hover {
+  background: #ffb829;
+}
+
+/* Variation Form Card */
+.variationFormCard {
+  background: var(--surface);
+  border: 1px solid var(--border-default);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: var(--shadow-1);
+  margin-top: 12px;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.variationFormHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.variationFormTitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.variationFormBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.variationFormFooter {
+  display: flex;
+  gap: 10px;
+}
+
+/* Variation List */
+.variationsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-default);
+  margin-bottom: 12px;
+}
+
+.variationItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: var(--surface-muted);
+  border-radius: 12px;
+  border: 1px solid var(--border-light);
+}
+
+.variationInfo {
+  flex: 1;
+}
+
+.variationName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.variationMeta {
+  font-size: 11px;
+  color: var(--text-secondary);
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.removeVariationBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border-default);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.removeVariationBtn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.addVariationBtn {
+  width: 100%;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px dashed var(--border-default);
+  background: transparent;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+
+.addVariationBtn:hover {
+  border-color: var(--highlight-primary);
+  color: var(--highlight-primary);
+  background: rgba(246, 196, 15, 0.05);
+}
+
+/* Variation Images Section */
+.variationImagesSection {
+  padding-top: 12px;
+  border-top: 1px solid var(--border-light);
+}
+
+.variationImagesWrapper {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface-muted);
+  border: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 8px 0;
+}
+
+.variationImagePreview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.emptyVariationImages {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: var(--text-muted);
+}
+
+.removeVariationImageBtn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border-default);
+  background: var(--surface);
+  color: #ef4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all 0.15s ease;
+}
+
+.variationImagesWrapper:hover .removeVariationImageBtn {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.removeVariationImageBtn:hover {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.variationImageThumbnails {
+  display: flex;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.variationThumbnail {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  border: 2px solid var(--border-light);
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.variationThumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.variationThumbnail:hover {
+  border-color: var(--border-default);
+}
+
+.variationThumbnailActive {
+  border-color: var(--highlight-primary);
+  box-shadow: 0 0 0 2px rgba(246, 196, 15, 0.2);
+}
+
+.addVariationImageBtn {
+  width: 100%;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px dashed var(--border-default);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.addVariationImageBtn:hover {
+  border-color: var(--highlight-primary);
+  color: var(--highlight-primary);
+  background: rgba(246, 196, 15, 0.05);
+}
+
+/* Variation Card Layout */
+.variationCardContent {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.variationImageColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.variationImageGallery {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface-muted);
+  border: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.variationImageGallery img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.variationImageThumbnailsRow {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.variationImageThumbnailsRow::-webkit-scrollbar {
+  height: 4px;
+}
+
+.variationImageThumbnailsRow::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.variationImageThumbnailsRow::-webkit-scrollbar-thumb {
+  background: var(--border-light);
+  border-radius: 2px;
+}
+
+.variationAddPhotosBtn {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px dashed var(--border-default);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.variationAddPhotosBtn:hover {
+  border-color: var(--highlight-primary);
+  color: var(--highlight-primary);
+  background: rgba(246, 196, 15, 0.05);
+}
+
+.variationInfoColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.variationInfoRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.variationInfoFull {
+  grid-column: 1 / -1;
 }

@@ -1,18 +1,21 @@
 import type { ProductCategoryEnum } from "../enums/product-category.enum";
 import type { ProductStatusEnum } from "../enums/product-status.enum";
 import type { ImageResponse } from "./image-response.dto";
+import type { ProductVariationResponseDto } from "./product-variation-response.dto";
 
 export interface ProductResponse {
   id: string;
   name: string;
   description?: string;
   category: ProductCategoryEnum;
-  price: string;
-  promoPrice?: string;
-  isActive: ProductStatusEnum;
-  stockEnabled: boolean;
+  price: number;
+  promoPrice?: number;
+  status?: ProductStatusEnum;
+  isActiveStock: boolean;
   stock?: number;
+  lowStock: number;
   images: ImageResponse[];
+  variations?: ProductVariationResponseDto[];
   createdAt: string;
   updatedAt: string;
 }

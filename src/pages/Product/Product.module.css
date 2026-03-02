@@ -1,10 +1,9 @@
 .page {
   width: 100%;
   padding: 22px 24px 18px;
-  height: 95vh;
+  min-height: 100%;
   background: var(--bg-primary);
   color: var(--text-primary);
-  overflow-y: auto;
 }
 
 .header {
