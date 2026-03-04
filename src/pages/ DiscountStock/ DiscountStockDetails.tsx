@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import styles from "./ DiscountStockDetails.module.css";
-import { useNavigate } from "react-router-dom";
 import { Printer, X, ChevronDown } from "lucide-react";
 import { ButtonBack } from "../../components/ButtonBack/ButtonBack";
 
