@@ -90,6 +90,7 @@ const mapSupplierCard = (
   };
 };
 
+
 export function Supplier() {
   const [activeCat, setActiveCat] = useState<CategoryKey>("all");
   const [page, setPage] = useState(1);
