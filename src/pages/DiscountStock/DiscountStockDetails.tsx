@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import styles from "./ DiscountStockDetails.module.css";
+import styles from "./DiscountStockDetails.module.css";
 import { Printer, X, ChevronDown } from "lucide-react";
 import { ButtonBack } from "../../components/ButtonBack/ButtonBack";
 

@@ -1,10 +1,10 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { DashboardLayout } from "./components/layouts/DashboardLayout";
 import { Dashboard } from "./pages/Dashboard/Dashboard";
-import { DiscountStock } from "./pages/ DiscountStock/ DiscountStock";
+import { DiscountStock } from "./pages/DiscountStock/DiscountStock";
 import { Products } from "./pages/Product/Products";
 import { ProductsDetails } from "./pages/Product/ProductsDetails";
-import DiscountStockDetails from "./pages/ DiscountStock/ DiscountStockDetails";
+import DiscountStockDetails from "./pages/DiscountStock/DiscountStockDetails";
 import Login from "./pages/Login/Login";
 import { useAuth } from "./contexts/useAuth";
 import { Supplier } from "./pages/Supplier/Supplier";

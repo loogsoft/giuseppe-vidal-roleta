@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import styles from "./ DiscountStock.module.css";
+import styles from "./DiscountStock.module.css";
 import { FiClock, FiFilter, FiSearch, FiTag, FiTrendingDown } from "react-icons/fi";
 import StatCard from "../../components/StatCard/StatCard";
 import { CustomSelect } from "../../components/CustomSelect/CustomSelect";
