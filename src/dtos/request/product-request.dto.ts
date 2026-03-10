@@ -14,6 +14,10 @@ export interface ProductRequest {
 
   price: number;
 
+  color?: string;
+
+  size?: string;
+
   promoPrice?: number;
 
 
@@ -33,6 +37,7 @@ export interface ProductRequest {
 
   variations?: ProductVariationRequestDto[];
 
+  imageIds?: string[];
 
   supplierId: string;
 

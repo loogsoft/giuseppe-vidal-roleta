@@ -9,6 +9,8 @@ export interface ProductResponse {
   description?: string;
   category: ProductCategoryEnum;
   price: number;
+  color?: string;
+  size?: string;
   promoPrice?: number;
   status?: ProductStatusEnum;
   isActiveStock: boolean;

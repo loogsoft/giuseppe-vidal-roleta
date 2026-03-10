@@ -3,7 +3,9 @@ import { useState } from "react";
 import styles from "./EntityCard.module.css";
 import {
   FiBox,
+  FiLayers,
   FiDollarSign,
+  FiDroplet,
   FiMail,
   FiMapPin,
   FiPackage,
@@ -11,6 +13,8 @@ import {
   FiTrash2,
   FiChevronLeft,
   FiChevronRight,
+  FiChevronDown,
+  FiChevronUp,
 } from "react-icons/fi";
 import { GiTrousers, GiTShirt } from "react-icons/gi";
 import type { CSSProperties } from "react";
@@ -38,6 +42,10 @@ type ProductProps = BaseProps & {
   lowStock: number;
   isActiveStock: boolean;
   available: boolean;
+  color?: string;
+  colors?: string[];
+  size?: string;
+  sizes?: string[];
   onToggleAvailable?: (id: string) => void;
   navigateTo: string;
   status: ProductStatusEnum | undefined;
@@ -177,10 +185,27 @@ export default function EntityCard(props: Props) {
   const statusLabel =
     statusValue === ProductStatusEnum.ACTIVED ? "ATIVO" : "INATIVO";
   const productIcon = getProductIcon(`${props.name} ${props.category}`);
-  
+
   const images = props.imageUrl || [];
   const hasMultipleImages = images.length > 1;
   const productImageUrl = images[currentImageIndex]?.url || "";
+
+
+  // Sempre tratar como detalhado: se não houver variations, cria uma variação "fake" com os dados principais
+  let variations: any[] = [];
+  if (Array.isArray((props as any).variations) && (props as any).variations.length > 0) {
+    variations = (props as any).variations;
+  } else {
+    variations = [{
+      size: props.size || (props.sizes && props.sizes.length > 0 ? props.sizes.join(', ') : undefined),
+      stock: props.stock,
+      price: props.price,
+      color: props.color,
+      colors: props.colors,
+    }];
+  }
+  // ...existing code...
+  const [showVariations, setShowVariations] = useState(true);
 
   const handlePrevImage = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -194,10 +219,15 @@ export default function EntityCard(props: Props) {
   return (
     <div
       className={`${styles.card} ${styles.EntityCard}`}
-      onClick={() => props.navigateTo ? navigate(props.navigateTo) : undefined}
+      onClick={() =>
+        props.navigateTo ? navigate(props.navigateTo) : undefined
+      }
     >
       <div className={`${styles.media} ${styles.productMedia}`}>
-        {props.isActiveStock && props.stock !== undefined && props.stock > 0 && props.stock <= props.lowStock ? (
+        {props.isActiveStock &&
+        props.stock !== undefined &&
+        props.stock > 0 &&
+        props.stock <= props.lowStock ? (
           <div className={styles.lowStock}>ESTOQUE BAIXO</div>
         ) : null}
         {productImageUrl ? (
@@ -231,7 +261,9 @@ export default function EntityCard(props: Props) {
                     <span
                       key={index}
                       className={`${styles.imageIndicator} ${
-                        index === currentImageIndex ? styles.imageIndicatorActive : ""
+                        index === currentImageIndex
+                          ? styles.imageIndicatorActive
+                          : ""
                       }`}
                     />
                   ))}
@@ -244,7 +276,6 @@ export default function EntityCard(props: Props) {
             <span className={styles.productIcon}>{productIcon}</span>
           </div>
         )}
-
         {props.onDelete ? (
           <div className={styles.cardActions}>
             <button
@@ -276,7 +307,9 @@ export default function EntityCard(props: Props) {
           </div>
         </div>
         <div className={`${styles.category} ${styles.productCategory}`}>
-          { props.description && props.description.length > 110 ? props.description.slice(0,110) + "..." : props.description }
+          {props.description && props.description.length > 110
+            ? props.description.slice(0, 110) + "..."
+            : props.description}
         </div>
 
         <div className={styles.productMeta}>
@@ -284,13 +317,23 @@ export default function EntityCard(props: Props) {
             <>
               <div className={styles.metaItem}>
                 <FiDollarSign className={styles.metaIcon} />
-                <span className={styles.originalPrice}>{currencyBRL(Number(props.price))}</span>
+                <span className={styles.originalPrice}>
+                  {currencyBRL(Number(props.price))}
+                </span>
               </div>
               <div className={`${styles.metaItem} ${styles.promoItem}`}>
                 <FiDollarSign className={styles.metaIcon} />
-                <span className={styles.promoPrice}>{currencyBRL(Number(props.promoPrice))}</span>
+                <span className={styles.promoPrice}>
+                  {currencyBRL(Number(props.promoPrice))}
+                </span>
                 <span className={styles.discount}>
-                  -{Math.round(((Number(props.price) - Number(props.promoPrice)) / Number(props.price)) * 100)}%
+                  -
+                  {Math.round(
+                    ((Number(props.price) - Number(props.promoPrice)) /
+                      Number(props.price)) *
+                      100,
+                  )}
+                  %
                 </span>
               </div>
             </>
@@ -300,20 +343,149 @@ export default function EntityCard(props: Props) {
               {currencyBRL(Number(props.price))}
             </div>
           )}
-          
-          {props.isActiveStock && props.stock !== undefined && props.stock > 0 && (
-            <div className={styles.metaItem}>
-              <FiBox className={styles.metaIcon} />
-              {`Estoque: ${props.stock}`}
-            </div>
-          )}
-
           {props.isActiveStock && props.lowStock > 0 && (
             <div className={styles.metaItem}>
               <FiBox className={styles.metaIcon} />
               {`Alerta de estoque: ${props.lowStock}`}
             </div>
           )}
+
+          {/* Sempre mostra o bloco de variações detalhado */}
+          <div className={styles.variationBlock}>
+            <button
+              type="button"
+              style={{
+                background: "none",
+                border: "none",
+                outline: "none",
+                boxShadow: "none",
+                display: "flex",
+                alignItems: "center",
+                cursor: "pointer",
+                padding: 0,
+                marginBottom: 8,
+                fontWeight: 500,
+                fontSize: 13,
+                color: "#444",
+                gap: 6,
+              }}
+              tabIndex={-1}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowVariations((v) => !v);
+              }}
+              aria-expanded={showVariations}
+              aria-controls="variation-list"
+            >
+              <FiLayers
+                style={{ marginRight: 6, color: "var(--highlight-primary)" }}
+              />
+              <span style={{ fontWeight: 600, color: "#000" }}>Variações</span>
+              {showVariations ? <FiChevronUp /> : <FiChevronDown />}
+            </button>
+            {showVariations && (
+              <div className={styles.variationList} id="variation-list">
+                {variations.map((v: any, i: number) => (
+                  <div
+                    className={styles.variationItem}
+                    key={v.id || i}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      background: "#f8f8f8",
+                      borderRadius: 10,
+                      padding: "8px 10px",
+                      marginBottom: 10,
+                      boxShadow: "0 1px 4px #0001",
+                      fontSize: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginBottom: 2,
+                      }}
+                    >
+                      <span style={{ fontWeight: 600, fontSize: 13 }}>
+                        Tamanho: {" "}
+                        <span style={{ fontWeight: 400 }}>
+                          {v.size || "-"}
+                        </span>
+                      </span>
+                      <span
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                          fontSize: 12,
+                        }}
+                      >
+                        <FiDroplet style={{ color: "#888", fontSize: 13 }} />
+                        {/* Suporte para múltiplas cores */}
+                        {(v.colors && Array.isArray(v.colors) && v.colors.length > 0
+                          ? v.colors
+                          : v.color
+                            ? [v.color]
+                            : []
+                        ).map((color: string, idx: number) => (
+                          <span
+                            key={idx}
+                            className={styles.variationColorDot}
+                            style={{
+                              background: color || "#ccc",
+                              marginRight: 0,
+                              width: 16,
+                              height: 16,
+                              borderRadius: "50%",
+                              display: "inline-block",
+                              border: "1px solid #ddd",
+                            }}
+                            title={color || ""}
+                          />
+                        ))}
+                      </span>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginTop: 0,
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontWeight: 500,
+                          color: "#444",
+                          fontSize: 12,
+                        }}
+                      >
+                        Estoque: {" "}
+                        <span style={{ fontWeight: 400 }}>
+                          {v.stock ?? 0}
+                        </span>
+                      </span>
+                      {v.price && Number(v.price) !== Number(props.price) && (
+                        <span
+                          className={styles.variationPrice}
+                          style={{
+                            marginLeft: 8,
+                            fontWeight: 600,
+                            color: "#1a7f37",
+                            fontSize: 12,
+                          }}
+                        >
+                          {currencyBRL(Number(v.price))}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {!statusValue ? (

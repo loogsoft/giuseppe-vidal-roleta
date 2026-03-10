@@ -349,11 +349,26 @@ export function Products() {
                 category={p.category}
                 price={p.price}
                 promoPrice={p.promoPrice}
-                imageUrl={p.images}
-                status={p.status}
-                isActiveStock={p.isActiveStock}
+                imageUrl={[
+                  ...(p.images || []),
+                  ...(p.variations || [])
+                    .filter((v) => v.imageUrl)
+                    .map((v) => ({ url: v.imageUrl!, fileName: v.name || "", id: v.id || "", isPrimary: false })),
+                ]}
                 stock={p.stock}
+                isActiveStock={p.isActiveStock}
                 available
+                color={p.color}
+                colors={Array.from(new Set([
+                  ...(p.color ? [p.color] : []),
+                  ...((p.variations || []).map((v) => v.color).filter(Boolean) as string[]),
+                ]))}
+                size={p.size}
+                sizes={Array.from(new Set([
+                  ...(p.size ? [p.size] : []),
+                  ...((p.variations || []).map((v) => v.size).filter(Boolean) as string[]),
+                ]))}
+                status={p.status}
                 onEdit={() => {}}
                 onDelete={(id) => handleDelete(id)}
                 onToggleAvailable={() => {}}

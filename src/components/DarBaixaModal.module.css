@@ -1,3 +1,12 @@
+.variationColorDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-default);
+  display: inline-block;
+  vertical-align: middle;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+}
 .backdrop {
   position: fixed;
   inset: 0;
@@ -378,10 +387,241 @@
   flex-shrink: 0;
 }
 
+/* Variation Picker */
+.variationSection {
+  margin-bottom: 20px;
+}
+
+.variationSectionLabel {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.variationGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.variationChip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface-muted);
+  border: 1.5px solid var(--border-default);
+  border-radius: 14px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  position: relative;
+  min-width: 120px;
+  text-align: left;
+}
+
+.variationChip:hover {
+  border-color: var(--highlight-primary);
+  background: rgba(255, 200, 61, 0.06);
+}
+
+.variationChipActive {
+  border-color: var(--highlight-primary);
+  background: rgba(255, 200, 61, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 200, 61, 0.15);
+}
+
+.variationChipEmpty {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.variationChipImg {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--border-default);
+}
+
+.variationChipDot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+}
+
+.variationChipInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.variationChipSize {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.variationChipPrice {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--highlight-primary);
+}
+
+.variationChipStock {
+  font-size: 10px;
+  font-weight: 600;
+  color: #22c55e;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.variationChipStockLow {
+  color: #f59e0b;
+}
+
+.variationChipStockEmpty {
+  color: #ef4444;
+}
+
+.variationChipCheck {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--highlight-primary);
+}
+
 .operatorLeft > div {
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.reasonDropdown {
+  position: relative;
+}
+
+.reasonTrigger {
+  text-align: left;
+  box-sizing: border-box;
+  font-family: inherit;
+  width: 100%;
+}
+
+.reasonList {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  z-index: 10000;
+  overflow: visible;
+}
+
+.reasonOption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.reasonOption:first-child {
+  border-radius: 12px 12px 0 0;
+}
+
+.reasonOption:last-child {
+  border-radius: 0 0 12px 12px;
+}
+
+.reasonOption:only-child {
+  border-radius: 12px;
+}
+
+.reasonOption:hover {
+  background: var(--surface-muted);
+}
+
+.reasonOptionActive {
+  background: rgba(255, 200, 61, 0.1);
+  color: var(--highlight-primary);
+  font-weight: 600;
+}
+
+.reasonOptionLabel {
+  flex: 1;
+}
+
+.reasonTooltipWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-left: 8px;
+}
+
+.reasonTooltipIcon {
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: help;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+.reasonTooltipWrap:hover .reasonTooltipIcon {
+  color: var(--highlight-primary);
+}
+
+.reasonTooltip {
+  position: absolute;
+  right: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--surface);
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 11px;
+  color: var(--text-primary);
+  width: 210px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  z-index: 10001;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s, visibility 0.2s;
+  line-height: 1.5;
+}
+
+.reasonTooltipWrap:hover .reasonTooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.reasonTooltip p {
+  margin: 0;
+}
+
+.reasonTooltip p + p {
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-style: italic;
 }
 
 .operatorTitle {

@@ -7,11 +7,20 @@ import { ProductService } from "../../service/Product.service";
 import type { ProductRequest } from "../../dtos/request/product-request.dto";
 import type { ProductVariationRequestDto } from "../../dtos/request/product-variation-request.dto";
 import type { ProductVariationResponseDto } from "../../dtos/response/product-variation-response.dto";
-import { Save, Plus, X } from "lucide-react";
+import { Save, Plus, Pencil } from "lucide-react";
 import { ImageGallery } from "../../components/ImageGallery";
+import EntityCard from "../../components/EntityCard";
 import { ButtonBack } from "../../components/ButtonBack/ButtonBack";
 
 type Variation = ProductVariationRequestDto | ProductVariationResponseDto;
+
+const PRODUCT_COLORS = [
+  { label: "Preto", hex: "#1A1A1A" },
+  { label: "Branco", hex: "#FFFFFF" },
+  { label: "Cinza", hex: "#9E9E9E" },
+  { label: "Azul", hex: "#1565C0" },
+  { label: "Vermelho", hex: "#C62828" },
+];
 
 export function ProductsDetails() {
   const navigate = useNavigate();
@@ -19,7 +28,9 @@ export function ProductsDetails() {
   const isEdit = !!id;
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const variationFileInputRef = useRef<HTMLInputElement | null>(null);
-
+  const colorPickerRef = useRef<HTMLInputElement | null>(null);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [editingColor, setEditingColor] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<ProductCategoryEnum>(
@@ -30,6 +41,8 @@ export function ProductsDetails() {
   );
   const [price, setPrice] = useState("");
   const [promoPrice, setPromoPrice] = useState("");
+  const [color, setColor] = useState("");
+  const [size, setSize] = useState("");
   const [lowStock, setLowStock] = useState("5");
   const [lowStockAlertEnabled, setLowStockAlertEnabled] = useState(true);
   const [stockEnabled, setStockEnabled] = useState(false);
@@ -38,15 +51,15 @@ export function ProductsDetails() {
   const [imageNames, setImageNames] = useState<string[]>([]);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [existingImageIds, setExistingImageIds] = useState<string[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [saving, setSaving] = useState(false);
-
-  // Variation states
   const [variations, setVariations] = useState<Variation[]>([]);
   const [expandedVariationForm, setExpandedVariationForm] = useState(false);
   const [variationPrice, setVariationPrice] = useState("");
   const [variationStock, setVariationStock] = useState("");
   const [variationColor, setVariationColor] = useState("");
+  const [showVariationColorPicker, setShowVariationColorPicker] = useState(false);
   const [variationSize, setVariationSize] = useState("");
   const [variationIsActive, setVariationIsActive] = useState(true);
   const [variationImageFiles, setVariationImageFiles] = useState<File[]>([]);
@@ -58,8 +71,6 @@ export function ProductsDetails() {
   const [editingVariationIndex, setEditingVariationIndex] = useState<
     number | null
   >(null);
-  const editingVariationFileInputRef = useRef<HTMLInputElement | null>(null);
-
   const categoryOptions = useMemo(() => Object.values(ProductCategoryEnum), []);
   const statusOptions = useMemo(() => Object.values(ProductStatusEnum), []);
 
@@ -89,6 +100,8 @@ export function ProductsDetails() {
       setPromoPrice(
         data.promoPrice ? String(data.promoPrice).replace(".", ",") : "",
       );
+      setColor(data.color ?? "");
+      setSize(data.size ?? "");
       setLowStock(String(data.lowStock ?? ""));
       setLowStockAlertEnabled(!!data.lowStock && data.lowStock > 0);
       setStockEnabled(!!data.isActiveStock);
@@ -96,6 +109,7 @@ export function ProductsDetails() {
       setImageNames((data.images || []).map((img) => img.fileName));
       setImageFiles([]);
       setImagePreviews((data.images || []).map((img) => img.url));
+      setExistingImageIds((data.images || []).map((img) => img.id));
       setSelectedImageIndex(0);
       // Load variations but clean them to remove response-only fields
       const cleanLoadedVariations = (data.variations || []).map((v) => ({
@@ -105,6 +119,7 @@ export function ProductsDetails() {
         isActive: v.isActive ?? true,
         color: v.color,
         size: v.size,
+        images: v.imageUrl ? [{ url: v.imageUrl, fileName: v.name || "", id: "", isPrimary: false }] : undefined,
       })) as ProductVariationRequestDto[];
       setVariations(cleanLoadedVariations);
     };
@@ -135,8 +150,16 @@ export function ProductsDetails() {
   };
 
   const onRemoveImage = (index: number) => {
+    const existingCount = existingImageIds.length;
+
+    if (index < existingCount) {
+      setExistingImageIds((prev) => prev.filter((_, i) => i !== index));
+    } else {
+      const fileIndex = index - existingCount;
+      setImageFiles((prev) => prev.filter((_, i) => i !== fileIndex));
+    }
+
     setImageNames((prev) => prev.filter((_, i) => i !== index));
-    setImageFiles((prev) => prev.filter((_, i) => i !== index));
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
 
     if (selectedImageIndex >= imagePreviews.length - 1) {
@@ -153,6 +176,8 @@ export function ProductsDetails() {
     setVariationImageFiles([]);
     setVariationImagePreviews([]);
     setSelectedVariationImageIndex(0);
+    setShowVariationColorPicker(false);
+    setEditingVariationIndex(null);
     setExpandedVariationForm(true);
   };
 
@@ -161,6 +186,26 @@ export function ProductsDetails() {
     setVariationImageFiles([]);
     setVariationImagePreviews([]);
     setSelectedVariationImageIndex(0);
+    setShowVariationColorPicker(false);
+    setEditingVariationIndex(null);
+  };
+
+  const onEditVariation = (index: number) => {
+    const v = variations[index];
+    setVariationColor(v.color || "");
+    setVariationSize(v.size || "");
+    setVariationPrice(v.price ? String(v.price).replace(".", ",") : "");
+    setVariationStock(v.stock !== undefined && v.stock !== null ? String(v.stock) : "");
+    setVariationIsActive(v.isActive ?? true);
+    const imgs = (v.images || []) as any[];
+    setVariationImageFiles([]);
+    setVariationImagePreviews(
+      imgs.map((img) => (img instanceof File ? URL.createObjectURL(img) : img.url || ""))
+    );
+    setSelectedVariationImageIndex(0);
+    setShowVariationColorPicker(false);
+    setEditingVariationIndex(index);
+    setExpandedVariationForm(true);
   };
 
   const onPickVariationImages = () => {
@@ -211,6 +256,13 @@ export function ProductsDetails() {
       return;
     }
 
+    const targetIndex = editingVariationIndex;
+
+    const existingImages =
+      targetIndex !== null
+        ? variations[targetIndex].images
+        : undefined;
+
     const newVariation: ProductVariationRequestDto = {
       name: `${variationColor.trim()} ${variationSize.trim()}`,
       price: variationPrice.trim() ? Number(toDot(variationPrice)) : undefined,
@@ -218,79 +270,27 @@ export function ProductsDetails() {
       color: variationColor.trim(),
       size: variationSize.trim(),
       isActive: variationIsActive,
-      images: variationImageFiles.length > 0 ? variationImageFiles : undefined,
+      images:
+        variationImageFiles.length > 0
+          ? variationImageFiles
+          : (existingImages as any),
     };
 
-    setVariations([...variations, newVariation]);
+    if (targetIndex !== null) {
+      setVariations((prev) => {
+        const updated = [...prev];
+        updated[targetIndex] = newVariation;
+        return updated;
+      });
+    } else {
+      setVariations((prev) => [...prev, newVariation]);
+    }
+
     onCloseVariationForm();
   };
 
   const onRemoveVariation = (index: number) => {
     setVariations(variations.filter((_, i) => i !== index));
-  };
-
-  const onPickEditingVariationImages = () => {
-    editingVariationFileInputRef.current?.click();
-  };
-
-  const onEditingVariationImagesSelected = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const files = Array.from(event.target.files ?? []);
-    if (!files.length) return;
-
-    setVariationImageFiles((prev) => [...prev, ...files]);
-
-    files.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setVariationImagePreviews((prev) => [
-          ...prev,
-          e.target?.result as string,
-        ]);
-      };
-      reader.readAsDataURL(file);
-    });
-
-    event.target.value = "";
-  };
-
-  const onAddImagesToVariation = (variationIdx: number) => {
-    if (variationImageFiles.length === 0) return;
-
-    const updatedVariations = [...variations];
-    const currentVariation = updatedVariations[variationIdx];
-
-    const currentImages = currentVariation.images || [];
-    const newImages = Array.isArray(currentImages) ? [...currentImages] : [];
-
-    updatedVariations[variationIdx] = {
-      ...currentVariation,
-      images: [...newImages, ...variationImageFiles] as any,
-    };
-
-    setVariations(updatedVariations);
-    setEditingVariationIndex(null);
-    setVariationImageFiles([]);
-    setVariationImagePreviews([]);
-  };
-
-  const onRemoveVariationImageFromList = (
-    variationIdx: number,
-    imageIdx: number,
-  ) => {
-    const updatedVariations = [...variations];
-    const currentVariation = updatedVariations[variationIdx];
-    const currentImages = currentVariation.images || [];
-
-    if (Array.isArray(currentImages)) {
-      updatedVariations[variationIdx] = {
-        ...currentVariation,
-        images: currentImages.filter((_, i) => i !== imageIdx) as any,
-      };
-    }
-
-    setVariations(updatedVariations);
   };
 
   const toDot = (value: string) =>
@@ -349,24 +349,16 @@ export function ProductsDetails() {
       category,
       status,
       price: Number(toDot(price)),
+      color: color.trim() || undefined,
+      size: size.trim() || undefined,
       promoPrice: promoPrice.trim() ? Number(toDot(promoPrice)) : undefined,
       lowStock: lowStockAlertEnabled ? Number(lowStock || "0") : 0,
       isActiveStock: stockEnabled,
       stock: stockEnabled ? Number(stock || 0) : 0,
       variations: cleanVariations,
+      imageIds: isEdit ? existingImageIds : undefined,
       supplierId: supplierId.trim() || undefined,
     } as ProductRequest;
-
-    const allFiles = [...imageFiles];
-    variations.forEach((variation) => {
-      if (variation.images && Array.isArray(variation.images)) {
-        variation.images.forEach((img) => {
-          if (img instanceof File) {
-            allFiles.push(img);
-          }
-        });
-      }
-    });
 
     try {
       setSaving(true);
@@ -375,7 +367,7 @@ export function ProductsDetails() {
         navigate(-1);
         return;
       }
-      await ProductService.create(payload, allFiles);
+      await ProductService.create(payload, imageFiles);
       navigate(-1);
     } finally {
       setSaving(false);
@@ -402,14 +394,6 @@ export function ProductsDetails() {
         multiple
         style={{ display: "none" }}
         onChange={onVariationImagesSelected}
-      />
-      <input
-        ref={editingVariationFileInputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        style={{ display: "none" }}
-        onChange={onEditingVariationImagesSelected}
       />
 
       <div className={styles.top}>
@@ -531,6 +515,100 @@ export function ProductsDetails() {
               </label>
 
               <div className={styles.row2}>
+                <div className={styles.field}>
+                  <span className={styles.label}>Cor</span>
+                  {isEdit && !editingColor ? (
+                    <div className={styles.colorSwatches}>
+                      {color && (
+                        <span
+                          className={`${styles.colorSwatch} ${styles.colorSwatchActive}`}
+                          style={{ background: color }}
+                        />
+                      )}
+                      {color && (
+                        <span className={styles.colorHexLabel}>{color}</span>
+                      )}
+                      <button
+                        type="button"
+                        className={styles.changeColorBtn}
+                        onClick={() => setEditingColor(true)}
+                      >
+                        {color ? "Alterar cor" : "Selecionar cor"}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className={styles.colorSwatches}>
+                      {PRODUCT_COLORS.map((c) => (
+                        <button
+                          key={c.hex}
+                          type="button"
+                          title={c.label}
+                          className={`${styles.colorSwatch} ${
+                            color === c.hex ? styles.colorSwatchActive : ""
+                          }`}
+                          style={{ background: c.hex }}
+                          onClick={() => setColor(color === c.hex ? "" : c.hex)}
+                        />
+                      ))}
+                      <div className={styles.colorPickerWrapper}>
+                        <button
+                          type="button"
+                          title="Cor personalizada"
+                          className={`${styles.colorSwatch} ${styles.colorSwatchCustom} ${
+                            color && !PRODUCT_COLORS.some((c) => c.hex === color)
+                              ? styles.colorSwatchActive
+                              : ""
+                          }`}
+                          style={{
+                            background:
+                              color && !PRODUCT_COLORS.some((c) => c.hex === color)
+                                ? color
+                                : undefined,
+                          }}
+                          onClick={() => setShowColorPicker((v) => !v)}
+                        >
+                          {!(color && !PRODUCT_COLORS.some((c) => c.hex === color)) && (
+                            <span className={styles.colorSwatchCustomIcon}>+</span>
+                          )}
+                        </button>
+                        {showColorPicker && (
+                          <div className={styles.colorPickerPopover}>
+                            <input
+                              ref={colorPickerRef}
+                              type="color"
+                              className={styles.colorPickerNative}
+                              value={color || "#000000"}
+                              onChange={(e) => setColor(e.target.value)}
+                            />
+                            <button
+                              type="button"
+                              className={styles.colorPickerConfirm}
+                              onClick={() => setShowColorPicker(false)}
+                            >
+                              OK
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      {color && (
+                        <span className={styles.colorHexLabel}>{color}</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <label className={styles.field}>
+                  <span className={styles.label}>Tamanho</span>
+                  <input
+                    className={styles.input}
+                    placeholder="Ex: M, G, 42"
+                    value={size}
+                    onChange={(event) => setSize(event.target.value)}
+                  />
+                </label>
+              </div>
+
+              <div className={styles.row2}>
                 <label className={styles.field}>
                   <span className={styles.label}>Preço</span>
                   <input
@@ -567,7 +645,7 @@ export function ProductsDetails() {
               </div>
 
               {stockEnabled && (
-                <>
+                <div className={styles.row2}>
                   <label className={styles.field}>
                     <span className={styles.label}>Quantidade</span>
                     <input
@@ -591,20 +669,16 @@ export function ProductsDetails() {
                         <span className={styles.toggleSlider} />
                       </button>
                     </div>
-                  </div>
-
-                  {lowStockAlertEnabled && (
-                    <label className={styles.field}>
-                      <span className={styles.label}>Limite de estoque baixo</span>
+                    {lowStockAlertEnabled && (
                       <input
                         className={styles.input}
                         placeholder="0"
                         value={lowStock}
                         onChange={(event) => setLowStock(event.target.value)}
                       />
-                    </label>
-                  )}
-                </>
+                    )}
+                  </div>
+                </div>
               )}
             </div>
           </section>
@@ -627,7 +701,11 @@ export function ProductsDetails() {
               {expandedVariationForm && (
                 <div className={styles.variationFormCard}>
                   <div className={styles.variationFormHeader}>
-                    <h3 className={styles.variationFormTitle}>Nova variação</h3>
+                    <h3 className={styles.variationFormTitle}>
+                      {editingVariationIndex !== null
+                        ? "Editar variação"
+                        : "Nova variação"}
+                    </h3>
                   </div>
 
                   <div className={styles.variationFormBody}>
@@ -647,17 +725,75 @@ export function ProductsDetails() {
                       {/* Coluna Direita: Informações */}
                       <div className={styles.variationInfoColumn}>
                         <div className={styles.variationInfoRow}>
-                          <label className={styles.field}>
+                          <div className={styles.field}>
                             <span className={styles.label}>Cor</span>
-                            <input
-                              className={styles.input}
-                              placeholder="Ex: Preta"
-                              value={variationColor}
-                              onChange={(event) =>
-                                setVariationColor(event.target.value)
-                              }
-                            />
-                          </label>
+                            <div className={styles.colorSwatches}>
+                              {PRODUCT_COLORS.map((c) => (
+                                <button
+                                  key={c.hex}
+                                  type="button"
+                                  title={c.label}
+                                  className={`${styles.colorSwatch} ${
+                                    variationColor === c.hex ? styles.colorSwatchActive : ""
+                                  }`}
+                                  style={{ background: c.hex }}
+                                  onClick={() =>
+                                    setVariationColor(variationColor === c.hex ? "" : c.hex)
+                                  }
+                                />
+                              ))}
+                              <div className={styles.colorPickerWrapper}>
+                                <button
+                                  type="button"
+                                  title="Cor personalizada"
+                                  className={`${styles.colorSwatch} ${styles.colorSwatchCustom} ${
+                                    variationColor &&
+                                    !PRODUCT_COLORS.some((c) => c.hex === variationColor)
+                                      ? styles.colorSwatchActive
+                                      : ""
+                                  }`}
+                                  style={{
+                                    background:
+                                      variationColor &&
+                                      !PRODUCT_COLORS.some((c) => c.hex === variationColor)
+                                        ? variationColor
+                                        : undefined,
+                                  }}
+                                  onClick={() =>
+                                    setShowVariationColorPicker((v) => !v)
+                                  }
+                                >
+                                  {!(
+                                    variationColor &&
+                                    !PRODUCT_COLORS.some((c) => c.hex === variationColor)
+                                  ) && (
+                                    <span className={styles.colorSwatchCustomIcon}>+</span>
+                                  )}
+                                </button>
+                                {showVariationColorPicker && (
+                                  <div className={styles.colorPickerPopover}>
+                                    <input
+                                      type="color"
+                                      className={styles.colorPickerNative}
+                                      value={variationColor || "#000000"}
+                                      onChange={(e) =>
+                                        setVariationColor(e.target.value)
+                                      }
+                                    />
+                                    <button
+                                      type="button"
+                                      className={styles.colorPickerConfirm}
+                                      onClick={() =>
+                                        setShowVariationColorPicker(false)
+                                      }
+                                    >
+                                      OK
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
                           <label className={styles.field}>
                             <span className={styles.label}>Tamanho</span>
                             <input
@@ -732,7 +868,9 @@ export function ProductsDetails() {
                       className={styles.addBtn}
                       onClick={onAddVariation}
                     >
-                      Adicionar
+                      {editingVariationIndex !== null
+                        ? "Salvar alteração"
+                        : "Adicionar"}
                     </button>
                   </div>
                 </div>
@@ -740,222 +878,44 @@ export function ProductsDetails() {
 
               {variations.length > 0 && (
                 <div className={styles.variationsList}>
-                  {variations.map((variation, index) => (
-                    <div key={index} className={styles.variationFormCard}>
-                      <div className={styles.variationFormHeader}>
-                        <h3 className={styles.variationFormTitle}>
-                          {variation.name}
-                        </h3>
+                  {variations.map((variation, index) => {
+                    const imgs = (variation.images || []) as any[];
+                    const imageUrl = imgs.map((img) =>
+                      img instanceof File
+                        ? { id: "", fileName: "", url: URL.createObjectURL(img), isPrimary: false }
+                        : { id: img.id || "", fileName: img.fileName || "", url: img.url || "", isPrimary: false }
+                    );
+                    return (
+                      <div key={index} className={styles.variationCardWrapper}>
                         <button
                           type="button"
-                          className={styles.removeVariationBtn}
-                          onClick={() => onRemoveVariation(index)}
+                          className={styles.variationHoverOverlay}
+                          onClick={() => onEditVariation(index)}
+                          aria-label="Editar variação"
                         >
-                          <X size={16} />
+                          <Pencil size={28} />
                         </button>
+                        <EntityCard
+                          id={String(index)}
+                          name={variation.name || `${variation.color ?? ""} ${variation.size ?? ""}`.trim() || `Variação ${index + 1}`}
+                          description={undefined}
+                          category={category}
+                          price={variation.price ?? 0}
+                          imageUrl={imageUrl}
+                          stock={Number(variation.stock)}
+                          lowStock={0}
+                          isActiveStock={false}
+                          available
+                          color={variation.color}
+                          size={variation.size}
+                          status={variation.isActive !== false ? ProductStatusEnum.ACTIVED : ProductStatusEnum.DISABLED}
+                          navigateTo=""
+                          onEdit={() => onEditVariation(index)}
+                          onDelete={() => onRemoveVariation(index)}
+                        />
                       </div>
-
-                      <div className={styles.variationFormBody}>
-                        <div className={styles.variationCardContent}>
-                          {/* Coluna Esquerda: Fotos */}
-                          <div className={styles.variationImageColumn}>
-                            <ImageGallery
-                              previews={
-                                variation.images && variation.images.length > 0
-                                  ? variation.images.map((img) => {
-                                      if (img instanceof File) {
-                                        return URL.createObjectURL(img);
-                                      }
-                                      // ImageResponse object
-                                      return (img as any).url || "";
-                                    })
-                                  : []
-                              }
-                              selectedIndex={0}
-                              imageNames={[]}
-                              onSelectImage={() => {}}
-                              onAddImages={() =>
-                                setEditingVariationIndex(index)
-                              }
-                              onRemoveImage={(imgIdx) =>
-                                onRemoveVariationImageFromList(index, imgIdx)
-                              }
-                            />
-                          </div>
-
-                          {/* Coluna Direita: Informações */}
-                          <div className={styles.variationInfoColumn}>
-                            <div className={styles.variationInfoRow}>
-                              <label className={styles.field}>
-                                <span className={styles.label}>Cor</span>
-                                <input
-                                  className={styles.input}
-                                  placeholder="Ex: Preta"
-                                  value={variation.color}
-                                  disabled
-                                  onChange={() => {}}
-                                />
-                              </label>
-                              <label className={styles.field}>
-                                <span className={styles.label}>Tamanho</span>
-                                <input
-                                  className={styles.input}
-                                  placeholder="Ex: M"
-                                  value={variation.size}
-                                  disabled
-                                  onChange={() => {}}
-                                />
-                              </label>
-                            </div>
-
-                            <div className={styles.variationInfoRow}>
-                              <label className={styles.field}>
-                                <span className={styles.label}>
-                                  Preço (opcional)
-                                </span>
-                                <input
-                                  className={styles.input}
-                                  placeholder="0,00"
-                                  value={
-                                    variation.price
-                                      ? String(variation.price).replace(
-                                          ".",
-                                          ",",
-                                        )
-                                      : ""
-                                  }
-                                  disabled
-                                  onChange={() => {}}
-                                />
-                              </label>
-                              <label className={styles.field}>
-                                <span className={styles.label}>Estoque</span>
-                                <input
-                                  className={styles.input}
-                                  placeholder="0"
-                                  value={variation.stock}
-                                  disabled
-                                  onChange={() => {}}
-                                />
-                              </label>
-                            </div>
-
-                            <label
-                              className={`${styles.field} ${styles.variationInfoFull}`}
-                            >
-                              <span className={styles.label}>Status</span>
-                              <select
-                                className={styles.select}
-                                value={variation.isActive ? "true" : "false"}
-                                disabled
-                                onChange={() => {}}
-                              >
-                                <option value="true">Ativo</option>
-                                <option value="false">Inativo</option>
-                              </select>
-                            </label>
-                          </div>
-                        </div>
-
-                        {editingVariationIndex === index && (
-                          <div
-                            className={styles.variationImagesSection}
-                            style={{
-                              marginTop: "16px",
-                              paddingTop: "16px",
-                              borderTop: "1px solid var(--border-light)",
-                            }}
-                          >
-                            <label className={styles.label}>
-                              Adicionar fotos à variação
-                            </label>
-                            <div className={styles.variationImagesWrapper}>
-                              {variationImagePreviews.length > 0 ? (
-                                <>
-                                  <img
-                                    src={variationImagePreviews[0]}
-                                    alt="Nova foto"
-                                    className={styles.variationImagePreview}
-                                  />
-                                  {variationImagePreviews.length > 1 && (
-                                    <div
-                                      className={
-                                        styles.variationImageThumbnails
-                                      }
-                                    >
-                                      {variationImagePreviews.map(
-                                        (preview, imgIdx) => (
-                                          <button
-                                            key={imgIdx}
-                                            className={
-                                              styles.variationThumbnail
-                                            }
-                                            type="button"
-                                            onClick={() =>
-                                              setVariationImageFiles(
-                                                variationImageFiles.filter(
-                                                  (_, i) => i !== imgIdx,
-                                                ),
-                                              )
-                                            }
-                                          >
-                                            <img
-                                              src={preview}
-                                              alt={`Thumbnail ${imgIdx + 1}`}
-                                            />
-                                          </button>
-                                        ),
-                                      )}
-                                    </div>
-                                  )}
-                                </>
-                              ) : (
-                                <div className={styles.emptyVariationImages}>
-                                  <div className={styles.emptyIcon}>📷</div>
-                                </div>
-                              )}
-                            </div>
-
-                            <button
-                              type="button"
-                              className={styles.addVariationImageBtn}
-                              onClick={onPickEditingVariationImages}
-                            >
-                              <Plus size={14} />
-                              Selecionar fotos
-                            </button>
-
-                            <div
-                              style={{
-                                display: "flex",
-                                gap: "8px",
-                                marginTop: "8px",
-                              }}
-                            >
-                              <button
-                                type="button"
-                                className={styles.cancelBtn}
-                                onClick={() => {
-                                  setEditingVariationIndex(null);
-                                  setVariationImageFiles([]);
-                                  setVariationImagePreviews([]);
-                                }}
-                              >
-                                Cancelar
-                              </button>
-                              <button
-                                type="button"
-                                className={styles.addBtn}
-                                onClick={() => onAddImagesToVariation(index)}
-                              >
-                                Adicionar fotos
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

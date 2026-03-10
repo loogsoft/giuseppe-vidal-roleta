@@ -8,6 +8,7 @@ export interface ProductVariationResponseDto {
   isActive?: boolean;
   color: string;
   size: string;
+  imageUrl?: string;
   images?: ImageResponse[];
   createdAt: string;
   updatedAt: string;

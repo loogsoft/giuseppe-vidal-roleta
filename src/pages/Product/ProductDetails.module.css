@@ -6,6 +6,126 @@
   color: var(--text-primary);
 }
 
+/* Color Swatches */
+.colorSwatches {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.colorSwatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+  outline: none;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.colorSwatch:hover {
+  transform: scale(1.12);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.26);
+}
+
+.colorSwatchActive {
+  border-color: #FFC83D;
+  box-shadow: 0 0 0 3px rgba(255, 200, 61, 0.35);
+}
+
+.colorSwatchCustom {
+  background: conic-gradient(
+    red, yellow, lime, cyan, blue, magenta, red
+  );
+}
+
+.colorSwatchCustomIcon {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.colorHexLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.changeColorBtn {
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-default);
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.changeColorBtn:hover {
+  border-color: #FFC83D;
+  color: #FFC83D;
+}
+
+.colorPickerWrapper {
+  position: relative;
+}
+
+.colorPickerPopover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 100;
+  background: var(--surface);
+  border: 1px solid var(--border-default);
+  border-radius: 14px;
+  padding: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.colorPickerNative {
+  width: 160px;
+  height: 130px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 8px;
+}
+
+.colorPickerConfirm {
+  width: 100%;
+  height: 32px;
+  border-radius: 10px;
+  border: none;
+  background: #FFC83D;
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.colorPickerConfirm:hover {
+  background: #ffb829;
+}
+
 .top {
   display: flex;
   align-items: flex-start;
@@ -624,41 +744,39 @@
 
 /* Variation List */
 .variationsList {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
   padding: 12px 0;
-  border-bottom: 1px solid var(--border-default);
   margin-bottom: 12px;
 }
 
-.variationItem {
+.variationCardWrapper {
+  zoom: 0.72;
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.variationHoverOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.48);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px;
-  background: var(--surface-muted);
+  justify-content: center;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  border: none;
+  cursor: pointer;
+  width: 100%;
   border-radius: 12px;
-  border: 1px solid var(--border-light);
 }
 
-.variationInfo {
-  flex: 1;
-}
-
-.variationName {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-}
-
-.variationMeta {
-  font-size: 11px;
-  color: var(--text-secondary);
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+.variationCardWrapper:hover .variationHoverOverlay {
+  opacity: 1;
 }
 
 .removeVariationBtn {
@@ -679,6 +797,46 @@
   background: #ef4444;
   color: #ffffff;
   border-color: #ef4444;
+}
+
+.editVariationBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border-default);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  margin-right: 4px;
+}
+
+.editVariationBtn:hover {
+  background: var(--accent-color, #22c55e);
+  color: #ffffff;
+  border-color: var(--accent-color, #22c55e);
+}
+
+.variationThumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  margin-right: 10px;
+  border: 1px solid var(--border-light);
+}
+
+.variationColorDot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-right: 10px;
+  border: 1.5px solid rgba(0, 0, 0, 0.1);
 }
 
 .addVariationBtn {

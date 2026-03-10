@@ -33,13 +33,24 @@ export const ProductService = {
   ): Promise<ProductResponse> => {
     const formData = new FormData();
 
-    Object.entries(product).forEach(([key, value]) => {
-      appendFormValue(formData, key, value);
-    });
+    const { variations, ...productData } = product;
+    const variationsForJson = variations?.map(({ images: _images, ...rest }) => rest);
+
+    Object.entries({ ...productData, variations: variationsForJson }).forEach(
+      ([key, value]) => {
+        appendFormValue(formData, key, value);
+      },
+    );
 
     if (files?.length) {
       files.forEach((file) => formData.append("files", file));
     }
+
+    variations?.forEach((variation, index) => {
+      if (variation.images && variation.images.length > 0 && variation.images[0] instanceof File) {
+        formData.append(`variationImage_${index}`, variation.images[0]);
+      }
+    });
 
     const response = await api.post<ProductResponse>(API_URL, formData, {
       headers: {
@@ -55,32 +66,37 @@ export const ProductService = {
     product: Partial<ProductRequest>,
     files?: File[],
   ): Promise<ProductResponse> => {
-    if (files && files.length > 0) {
-      const formData = new FormData();
+    const formData = new FormData();
 
-      Object.entries(product).forEach(([key, value]) => {
+    const { variations, ...productData } = product;
+    const variationsForJson = variations?.map(({ images: _images, ...rest }) => rest);
+
+    Object.entries({ ...productData, variations: variationsForJson }).forEach(
+      ([key, value]) => {
         appendFormValue(formData, key, value);
-      });
+      },
+    );
 
+    if (files?.length) {
       files.forEach((file) => formData.append("files", file));
-
-      const response = await api.patch<ProductResponse>(
-        `${API_URL}/${id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        },
-      );
-
-      return response.data;
     }
+
+    variations?.forEach((variation, index) => {
+      if (variation.images && variation.images.length > 0 && variation.images[0] instanceof File) {
+        formData.append(`variationImage_${index}`, variation.images[0]);
+      }
+    });
 
     const response = await api.patch<ProductResponse>(
       `${API_URL}/${id}`,
-      product,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
     );
+
     return response.data;
   },
 

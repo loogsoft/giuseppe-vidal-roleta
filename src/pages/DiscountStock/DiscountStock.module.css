@@ -461,6 +461,20 @@
   border-color: #000;
 }
 
+.historyValueBadge {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.historyValueBadge strong {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-primary, #f5c518);
+}
+
 .historyOwnerBadge {
   display: flex;
   align-items: center;

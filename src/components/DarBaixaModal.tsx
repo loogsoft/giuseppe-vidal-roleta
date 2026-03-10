@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import {
   FiX,
@@ -10,10 +10,12 @@ import {
   FiCheckCircle,
   FiAlertTriangle,
   FiShield,
+  FiHelpCircle,
 } from "react-icons/fi";
 import styles from "./DarBaixaModal.module.css";
 import type { ProductResponse } from "../dtos/response/product-response.dto";
 import { useAuth } from "../contexts/useAuth";
+import { StockMovementService } from "../service/Stock-movement.service";
 
 type Props = {
   isOpen: boolean;
@@ -29,16 +31,65 @@ export type BaixaFormData = {
   responsible: string;
   observation: string;
   operatorEmail: string;
+  variationId?: string;
+  variationLabel?: string;
 };
 
 const REASONS = ["Venda", "Avaria", "Consumo interno", "Devolução", "Perda"];
-const PAYMENT_METHODS = ["PIX", "Dinheiro", "Cartão de crédito", "Cartão de débito", "Transferência", "N/A"];
+
+const REASONS_INFO: Record<string, { desc: string; example: string }> = {
+  Venda: {
+    desc: "Produto saiu porque foi vendido a um cliente.",
+    example: "Ex: Cliente comprou 1 camiseta tamanho M.",
+  },
+  Avaria: {
+    desc: "Produto foi danificado e não pode mais ser vendido.",
+    example: "Ex: Camiseta rasgou no estoque.",
+  },
+  "Consumo interno": {
+    desc: "Produto usado pela própria empresa.",
+    example: "Ex: Funcionário pegou uma camiseta para uniforme.",
+  },
+  Devolução: {
+    desc: "Produto foi devolvido para o fornecedor.",
+    example: "Ex: Loja devolveu 2 camisetas com defeito para o fornecedor.",
+  },
+  Perda: {
+    desc: "Produto desapareceu ou não foi encontrado no estoque.",
+    example: "Ex: 1 camiseta sumiu durante a contagem de estoque.",
+  },
+};
+const PAYMENT_METHODS = [
+  "PIX",
+  "Dinheiro",
+  "Cartão de crédito",
+  "Cartão de débito",
+  "Transferência",
+  "N/A",
+];
 
 export function DarBaixaModal({ isOpen, onClose, product, onConfirm }: Props) {
   const { user } = useAuth();
   const operatorLabel = user?.name || user?.email || "Usuário desconhecido";
   const operatorEmail = user?.email || "";
 
+  // Sempre monta uma lista de "variações" incluindo o produto principal
+  const allVariations = [
+    {
+      id: product?.id,
+      name: product?.name,
+      price: product?.price,
+      stock: product?.stock ?? 0,
+      color: product?.color ?? '',
+      size: product?.size ?? '',
+      imageUrl: product?.images?.[0]?.url ?? '',
+      isMain: true,
+    },
+    ...(product?.variations?.map(v => ({ ...v, isMain: false })) ?? [])
+  ];
+
+  const hasVariations = allVariations.length > 1;
+  const [selectedVariationIdx, setSelectedVariationIdx] = useState<number | null>(hasVariations ? null : 0);
   const [form, setForm] = useState({
     quantity: 1,
     reason: "Venda",
@@ -46,15 +97,48 @@ export function DarBaixaModal({ isOpen, onClose, product, onConfirm }: Props) {
     responsible: "",
     observation: "",
   });
+  const RESPONSIBLE_LIST = ["Bruna", "Eduardo", "Yara"];
+  const [responsibleOpen, setResponsibleOpen] = useState(false);
+  const responsibleRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState("");
+  const [reasonOpen, setReasonOpen] = useState(false);
+  const reasonRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!reasonOpen && !responsibleOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (reasonOpen && reasonRef.current && !reasonRef.current.contains(e.target as Node)) {
+        setReasonOpen(false);
+      }
+      if (responsibleOpen && responsibleRef.current && !responsibleRef.current.contains(e.target as Node)) {
+        setResponsibleOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [reasonOpen, responsibleOpen]);
 
   if (!isOpen || !product) return null;
 
-  const currentStock = product.stock ?? 0;
+
+  // ...removido duplicidade...
+
+  const selectedVariation =
+    selectedVariationIdx !== null
+      ? allVariations[selectedVariationIdx]
+      : null;
+
+  const currentStock = selectedVariation
+    ? Number(selectedVariation.stock)
+    : 0;
   const isOverStock = form.quantity > currentStock;
   const isZero = form.quantity <= 0;
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
+    if (selectedVariationIdx === null) {
+      setError("Selecione uma variação antes de confirmar.");
+      return;
+    }
     if (!form.responsible.trim()) {
       setError("Informe o responsável pela baixa.");
       return;
@@ -68,9 +152,37 @@ export function DarBaixaModal({ isOpen, onClose, product, onConfirm }: Props) {
       return;
     }
     setError("");
-    onConfirm({ ...form, operatorEmail });
-    onClose();
-    setForm({ quantity: 1, reason: "Venda", paymentMethod: "PIX", responsible: "", observation: "" });
+
+    try {
+      if (!selectedVariation?.id) throw new Error('Variação não selecionada');
+      await StockMovementService.create({
+        variationId: selectedVariation.id,
+        type: "OUT",
+        quantity: form.quantity,
+        reason: form.reason,
+        paymentMethod: form.paymentMethod,
+        responsibleEmail: operatorEmail,
+        responsibleName: operatorLabel,
+        observation: form.observation,
+      });
+      onConfirm({
+        ...form,
+        operatorEmail,
+        variationId: selectedVariation.id,
+        variationLabel: `${selectedVariation.color ?? ''} ${selectedVariation.size ?? ''}`.trim(),
+      });
+      onClose();
+      setForm({
+        quantity: 1,
+        reason: "Venda",
+        paymentMethod: "PIX",
+        responsible: "",
+        observation: "",
+      });
+      setSelectedVariationIdx(hasVariations ? null : 0);
+    } catch (error) {
+      setError("Erro ao registrar a baixa. Tente novamente.");
+    }
   };
 
   const stockAfter = Math.max(0, currentStock - form.quantity);
@@ -91,7 +203,11 @@ export function DarBaixaModal({ isOpen, onClose, product, onConfirm }: Props) {
         <div className={styles.productCard}>
           <div className={styles.productThumb}>
             {product.images?.[0]?.url ? (
-              <img src={product.images[0].url} alt={product.name} className={styles.productImg} />
+              <img
+                src={product.images[0].url}
+                alt={product.name}
+                className={styles.productImg}
+              />
             ) : (
               <FiPackage className={styles.productIcon} />
             )}
@@ -100,20 +216,90 @@ export function DarBaixaModal({ isOpen, onClose, product, onConfirm }: Props) {
             <div className={styles.productName}>{product.name}</div>
             <div className={styles.productCategory}>{product.category}</div>
             <div className={styles.stockRow}>
-              <span className={`${styles.stockDot} ${currentStock <= product.lowStock ? styles.stockDotLow : styles.stockDotOk}`} />
+              <span
+                className={`${styles.stockDot} ${currentStock <= product.lowStock ? styles.stockDotLow : styles.stockDotOk}`}
+              />
               <span className={styles.stockText}>
-                {currentStock} em estoque
+                {Math.max(0, currentStock)} em estoque
               </span>
             </div>
           </div>
           {!isZero && !isOverStock && (
             <div className={styles.stockAfterBadge}>
               <span className={styles.stockAfterLabel}>Após a baixa</span>
-              <span className={`${styles.stockAfterValue} ${stockAfter <= product.lowStock ? styles.stockAfterLow : ""}`}>
+              <span
+                className={`${styles.stockAfterValue} ${stockAfter <= product.lowStock ? styles.stockAfterLow : ""}`}
+              >
                 {stockAfter}
               </span>
             </div>
           )}
+        </div>
+
+        <div className={styles.variationSection}>
+          <span className={styles.variationSectionLabel}>
+            Selecione a variação
+          </span>
+          <div className={styles.variationGrid}>
+            {allVariations.map((v, idx) => {
+              const vStock = Number(v.stock);
+              const vPrice = v.price ? Number(v.price) : null;
+              const isSelected = selectedVariationIdx === idx;
+              return (
+                <button
+                  key={v.id + (v.isMain ? '-main' : '')}
+                  type="button"
+                  className={`${styles.variationChip} ${isSelected ? styles.variationChipActive : ""} ${vStock === 0 ? styles.variationChipEmpty : ""}`}
+                  onClick={() => {
+                    if (!hasVariations) return;
+                    setSelectedVariationIdx(idx);
+                    setError("");
+                    setForm((f) => ({ ...f, quantity: 1 }));
+                  }}
+                  disabled={!hasVariations && idx === 0}
+                  style={!hasVariations && idx === 0 ? { cursor: 'default', opacity: 0.7 } : {}}
+                >
+                  {v.imageUrl ? (
+                    <img
+                      src={v.imageUrl}
+                      alt={v.size || v.name}
+                      className={styles.variationChipImg}
+                    />
+                  ) : (
+                    <span
+                      className={styles.variationChipDot}
+                      style={{ background: v.color || "#ccc" }}
+                    />
+                  )}
+                  <div className={styles.variationChipInfo}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span
+                        className={styles.variationColorDot}
+                        style={{ background: v.color || "#ccc" }}
+                      />
+                      <span className={styles.variationChipSize}>{v.size || v.name}</span>
+                    </span>
+                    {vPrice !== null && (
+                      <span className={styles.variationChipPrice}>
+                        {vPrice.toLocaleString("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                        })}
+                      </span>
+                    )}
+                    <span
+                      className={`${styles.variationChipStock} ${vStock === 0 ? styles.variationChipStockEmpty : vStock <= product.lowStock ? styles.variationChipStockLow : ""}`}
+                    >
+                      {vStock === 0 ? "Sem estoque" : `${vStock} un`}
+                    </span>
+                  </div>
+                  {isSelected && (
+                    <span className={styles.variationChipCheck}>✓</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div className={styles.formGrid}>
@@ -140,15 +326,41 @@ export function DarBaixaModal({ isOpen, onClose, product, onConfirm }: Props) {
               <FiTag className={styles.labelIcon} />
               MOTIVO DA BAIXA
             </label>
-            <select
-              className={styles.select}
-              value={form.reason}
-              onChange={(e) => setForm((f) => ({ ...f, reason: e.target.value }))}
-            >
-              {REASONS.map((r) => (
-                <option key={r} value={r}>{r}</option>
-              ))}
-            </select>
+            <div className={styles.reasonDropdown} ref={reasonRef}>
+              <button
+                type="button"
+                className={`${styles.select} ${styles.reasonTrigger}`}
+                onClick={() => setReasonOpen((o) => !o)}
+              >
+                {form.reason}
+              </button>
+              {reasonOpen && (
+                <div className={styles.reasonList}>
+                  {REASONS.map((r) => (
+                    <div
+                      key={r}
+                      className={`${styles.reasonOption} ${form.reason === r ? styles.reasonOptionActive : ""}`}
+                      onClick={() => {
+                        setForm((f) => ({ ...f, reason: r }));
+                        setReasonOpen(false);
+                      }}
+                    >
+                      <span className={styles.reasonOptionLabel}>{r}</span>
+                      <div
+                        className={styles.reasonTooltipWrap}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <FiHelpCircle className={styles.reasonTooltipIcon} />
+                        <div className={styles.reasonTooltip}>
+                          <p>{REASONS_INFO[r].desc}</p>
+                          <p>{REASONS_INFO[r].example}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className={styles.fieldGroup}>
@@ -159,10 +371,14 @@ export function DarBaixaModal({ isOpen, onClose, product, onConfirm }: Props) {
             <select
               className={styles.select}
               value={form.paymentMethod}
-              onChange={(e) => setForm((f) => ({ ...f, paymentMethod: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, paymentMethod: e.target.value }))
+              }
             >
               {PAYMENT_METHODS.map((m) => (
-                <option key={m} value={m}>{m}</option>
+                <option key={m} value={m}>
+                  {m}
+                </option>
               ))}
             </select>
           </div>
@@ -172,16 +388,33 @@ export function DarBaixaModal({ isOpen, onClose, product, onConfirm }: Props) {
               <FiUser className={styles.labelIcon} />
               RESPONSÁVEL
             </label>
-            <input
-              className={`${styles.input} ${error && !form.responsible.trim() ? styles.inputError : ""}`}
-              type="text"
-              placeholder="Nome do responsável"
-              value={form.responsible}
-              onChange={(e) => {
-                setError("");
-                setForm((f) => ({ ...f, responsible: e.target.value }));
-              }}
-            />
+            <div className={styles.reasonDropdown} ref={responsibleRef}>
+              <button
+                type="button"
+                className={`${styles.select} ${styles.reasonTrigger}`}
+                onClick={() => setResponsibleOpen((o) => !o)}
+                style={error && !form.responsible.trim() ? { borderColor: '#ef4444', boxShadow: '0 0 0 3px rgba(239, 68, 68, 0.1)' } : {}}
+              >
+                {form.responsible || "Selecione o responsável"}
+              </button>
+              {responsibleOpen && (
+                <div className={styles.reasonList}>
+                  {RESPONSIBLE_LIST.map((r) => (
+                    <div
+                      key={r}
+                      className={`${styles.reasonOption} ${form.responsible === r ? styles.reasonOptionActive : ""}`}
+                      onClick={() => {
+                        setForm((f) => ({ ...f, responsible: r }));
+                        setResponsibleOpen(false);
+                        setError("");
+                      }}
+                    >
+                      <span className={styles.reasonOptionLabel}>{r}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -195,7 +428,9 @@ export function DarBaixaModal({ isOpen, onClose, product, onConfirm }: Props) {
             placeholder="Alguma observação sobre esta baixa..."
             rows={2}
             value={form.observation}
-            onChange={(e) => setForm((f) => ({ ...f, observation: e.target.value }))}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, observation: e.target.value }))
+            }
           />
         </div>
 
@@ -203,7 +438,9 @@ export function DarBaixaModal({ isOpen, onClose, product, onConfirm }: Props) {
           <div className={styles.operatorLeft}>
             <FiShield className={styles.operatorIcon} />
             <div>
-              <span className={styles.operatorTitle}>Operação registrada por</span>
+              <span className={styles.operatorTitle}>
+                Operação registrada por
+              </span>
               <span className={styles.operatorName}>{operatorLabel}</span>
             </div>
           </div>
@@ -220,7 +457,10 @@ export function DarBaixaModal({ isOpen, onClose, product, onConfirm }: Props) {
         )}
 
         <div className={styles.actions}>
-          <button className={styles.confirmBtn} type="button" onClick={handleConfirm}>
+          <button
+            className={styles.confirmBtn}
+            /* type="button" */ onClick={handleConfirm}
+          >
             <FiCheckCircle />
             Confirmar Baixa
           </button>
@@ -230,7 +470,8 @@ export function DarBaixaModal({ isOpen, onClose, product, onConfirm }: Props) {
         </div>
 
         <p className={styles.disclaimer}>
-          Ao confirmar, o item será removido permanentemente do estoque disponível.
+          Ao confirmar, o item será removido permanentemente do estoque
+          disponível.
         </p>
       </div>
     </div>,

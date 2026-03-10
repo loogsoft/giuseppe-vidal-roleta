@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import styles from "./DiscountStock.module.css";
-import { FiClock, FiFilter, FiSearch, FiTag, FiTrendingDown, FiUser } from "react-icons/fi";
+import { FiDollarSign, FiFilter, FiPackage, FiSearch, FiShoppingBag, FiUser } from "react-icons/fi";
 import StatCard from "../../components/StatCard/StatCard";
 import { CustomSelect } from "../../components/CustomSelect/CustomSelect";
 import { DiscountStockFilterModal } from "../../components/DiscountStockFilterModal";
@@ -89,7 +89,24 @@ export function DiscountStock() {
     sortBy: "alpha",
   });
 
-  const totalOut = 142;
+  const totalVendas = useMemo(
+    () => STOCK_HISTORY.reduce((acc, h) => acc + h.quantity, 0),
+    [],
+  );
+
+  const faturamento = useMemo(
+    () =>
+      products.reduce(
+        (acc, p) => acc + Number(p.price ?? 0) * (p.stock ?? 0),
+        0,
+      ),
+    [products],
+  );
+
+  const faturamentoFormatted = faturamento.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -123,6 +140,10 @@ export function DiscountStock() {
     const term = search.trim().toLowerCase();
 
     let filtered = products.filter((item) => {
+      // Só exibe se tiver stock > 0 OU pelo menos uma variação com stock > 0
+      const hasStock = (item.stock ?? 0) > 0 || (item.variations?.some(v => Number(v.stock) > 0));
+      if (!hasStock) return false;
+
       const matchesSearch = term
         ? `${item.name} ${item.description ?? ""} ${item.category}`
             .toLowerCase()
@@ -161,15 +182,10 @@ export function DiscountStock() {
 
   const filteredHistory = useMemo(() => {
     const term = search.trim().toLowerCase();
-    if (!term) {
-      return STOCK_HISTORY;
-    }
-
-    return STOCK_HISTORY.filter((item) => {
-      const haystack =
-        `${item.product} ${item.reason} ${item.owner}`.toLowerCase();
-      return haystack.includes(term);
-    });
+    if (!term) return STOCK_HISTORY;
+    return STOCK_HISTORY.filter((item) =>
+      `${item.product} ${item.reason} ${item.owner}`.toLowerCase().includes(term),
+    );
   }, [search]);
 
   useEffect(() => {
@@ -211,22 +227,22 @@ export function DiscountStock() {
 
       <section className={styles.metrics}>
         <StatCard
-          label="Itens pendentes"
+          label="Total de produtos"
           value={products.length}
-          sub="Produtos com baixa"
-          icon={<FiClock />}
+          sub="Produtos cadastrados"
+          icon={<FiPackage />}
         />
         <StatCard
-          label="Total saida (hoje)"
-          value={`${totalOut} un`}
-          sub="Ultimas 24h"
-          icon={<FiTrendingDown />}
+          label="Total de vendas"
+          value={`${totalVendas} un`}
+          sub="Unidades vendidas"
+          icon={<FiShoppingBag />}
         />
         <StatCard
-          label="Motivo mais comum"
-          value="Venda Manual"
-          sub="Ultimas 24h"
-          icon={<FiTag />}
+          label="Faturamento"
+          value={faturamentoFormatted}
+          sub="Valor em estoque"
+          icon={<FiDollarSign />}
         />
       </section>
 
@@ -309,11 +325,26 @@ export function DiscountStock() {
                     category={item.category}
                     price={item.price}
                     promoPrice={item.promoPrice}
-                    imageUrl={item.images ?? []}
+                    imageUrl={[
+                      ...(item.images || []),
+                      ...(item.variations || [])
+                        .filter((v) => v.imageUrl)
+                        .map((v) => ({ url: v.imageUrl!, fileName: v.name || "", id: "", isPrimary: false })),
+                    ]}
                     stock={item.stock}
                     lowStock={item.lowStock}
                     isActiveStock={item.isActiveStock}
                     available={item.status === ProductStatusEnum.ACTIVED}
+                    color={item.color}
+                    colors={Array.from(new Set([
+                      ...(item.color ? [item.color] : []),
+                      ...((item.variations || []).map((v) => v.color).filter(Boolean) as string[]),
+                ]))}
+                    size={item.size}
+                    sizes={Array.from(new Set([
+                      ...(item.size ? [item.size] : []),
+                      ...((item.variations || []).map((v) => v.size).filter(Boolean) as string[]),
+                    ]))}
                     navigateTo=""
                     status={item.status}
                     actionButton={
@@ -376,7 +407,7 @@ export function DiscountStock() {
       ) : (
         <section className={styles.tablePanel}>
           <div className={styles.filters}>
-            <div style={{display:"flex", gap:"10px"}}>
+            <div style={{ display: "flex", gap: "10px" }}>
               <div className={styles.search}>
                 <FiSearch className={styles.searchIcon} />
                 <input
