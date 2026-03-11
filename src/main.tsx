@@ -7,14 +7,17 @@ import "./index.css";
 import "react-toastify/dist/ReactToastify.css";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { MessageProvider } from "./contexts/MessageContext";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider>
       <AuthProvider>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
+        <MessageProvider>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </MessageProvider>
       </AuthProvider>
     </ThemeProvider>
     <ToastContainer position="top-center" autoClose={7000} />

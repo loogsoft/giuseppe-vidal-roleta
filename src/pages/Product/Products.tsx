@@ -92,7 +92,16 @@ export function Products() {
   };
 
   const filtered = useMemo(() => {
-    let current = products.filter((p) => p.stock !== 0);
+    let current = products.filter((p) => {
+      // Produto principal tem estoque
+      if (Number(p.stock) > 0) return true;
+      // Alguma variação tem estoque
+      if (Array.isArray(p.variations)) {
+        return p.variations.some(v => Number(v.stock) > 0);
+      }
+      // Nenhum estoque
+      return false;
+    });
 
     // Filtro de categoria (select ou modal)
     const categoryToFilter =
@@ -410,6 +419,14 @@ export function Products() {
           </div>
         ) : error ? (
           <div style={{ padding: 12 }}>{error}</div>
+        ) : paginated.length === 0 ? (
+          <div className={styles.emptyState}>
+            <FiBox className={styles.emptyIcon} />
+            <h3 className={styles.emptyTitle}>Nenhum produto encontrado</h3>
+            <p className={styles.emptySubtitle}>
+              Tente ajustar os filtros ou adicione novos produtos.
+            </p>
+          </div>
         ) : (
           <div className={styles.grid}>
             {paginated.map((p) => (

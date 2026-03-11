@@ -321,6 +321,14 @@ export function Supplier() {
           </div>
         ) : error ? (
           <div style={{ padding: 12 }}>{error}</div>
+        ) : paginated.length === 0 ? (
+          <div className={styles.emptyState}>
+            <FiUsers className={styles.emptyIcon} />
+            <h3 className={styles.emptyTitle}>Nenhum fornecedor encontrado</h3>
+            <p className={styles.emptySubtitle}>
+              Tente ajustar os filtros ou cadastre um novo fornecedor.
+            </p>
+          </div>
         ) : (
           <div className={styles.grid}>
             {paginated.map((supplier) => (

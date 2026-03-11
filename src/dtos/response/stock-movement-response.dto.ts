@@ -4,6 +4,7 @@ export type StockMovementType = "IN" | "OUT";
 
 export interface StockMovementResponseDto {
   id: string;
+  productName: string;
   variation: ProductVariationResponseDto;
   quantity: number;
   type: StockMovementType;

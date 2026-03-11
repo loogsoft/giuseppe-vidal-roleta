@@ -53,21 +53,36 @@ export function OutOfStock() {
 
   const categoryFromKey = (key: CategoryKey) => {
     switch (key) {
-      case "shirt": return ProductCategoryEnum.SHIRT;
-      case "tshirt": return ProductCategoryEnum.TSHIRT;
-      case "polo": return ProductCategoryEnum.POLO;
-      case "shorts": return ProductCategoryEnum.SHORTS;
-      case "jacket": return ProductCategoryEnum.JACKET;
-      case "pants": return ProductCategoryEnum.PANTS;
-      case "dress": return ProductCategoryEnum.DRESS;
-      case "sweater": return ProductCategoryEnum.SWEATER;
-      case "hoodie": return ProductCategoryEnum.HOODIE;
-      case "underwear": return ProductCategoryEnum.UNDERWEAR;
-      case "footwear": return ProductCategoryEnum.FOOTWEAR;
-      case "belt": return ProductCategoryEnum.BELT;
-      case "wallet": return ProductCategoryEnum.WALLET;
-      case "sunglasses": return ProductCategoryEnum.SUNGLASSES;
-      default: return null;
+      case "shirt":
+        return ProductCategoryEnum.SHIRT;
+      case "tshirt":
+        return ProductCategoryEnum.TSHIRT;
+      case "polo":
+        return ProductCategoryEnum.POLO;
+      case "shorts":
+        return ProductCategoryEnum.SHORTS;
+      case "jacket":
+        return ProductCategoryEnum.JACKET;
+      case "pants":
+        return ProductCategoryEnum.PANTS;
+      case "dress":
+        return ProductCategoryEnum.DRESS;
+      case "sweater":
+        return ProductCategoryEnum.SWEATER;
+      case "hoodie":
+        return ProductCategoryEnum.HOODIE;
+      case "underwear":
+        return ProductCategoryEnum.UNDERWEAR;
+      case "footwear":
+        return ProductCategoryEnum.FOOTWEAR;
+      case "belt":
+        return ProductCategoryEnum.BELT;
+      case "wallet":
+        return ProductCategoryEnum.WALLET;
+      case "sunglasses":
+        return ProductCategoryEnum.SUNGLASSES;
+      default:
+        return null;
     }
   };
 
@@ -75,10 +90,11 @@ export function OutOfStock() {
   const outOfStockProducts = useMemo(() => {
     return products.filter((p) => {
       const mainStock = p.stock ?? 0;
-      const allVariationsEmpty = Array.isArray(p.variations) && p.variations.length > 0
-        ? p.variations.every((v) => (v.stock ?? 0) === 0)
-        : true;
-      return mainStock === 0 && allVariationsEmpty;
+      if (mainStock <= 0) return true;
+      if (Array.isArray(p.variations) && p.variations.length > 0) {
+        return p.variations.some((v) => Number(v.stock ?? 0) <= 0);
+      }
+      return false;
     });
   }, [products]);
 
@@ -96,7 +112,11 @@ export function OutOfStock() {
 
     const trimmed = query.trim().toLowerCase();
     if (trimmed) {
-      current = current.filter((p) => p.name.toLowerCase().includes(trimmed) || p.id.toLowerCase().includes(trimmed));
+      current = current.filter(
+        (p) =>
+          p.name.toLowerCase().includes(trimmed) ||
+          p.id.toLowerCase().includes(trimmed),
+      );
     }
 
     if (filters.minPrice) {
@@ -277,7 +297,10 @@ export function OutOfStock() {
 
           <div className={styles.filterActions}>
             <CustomSelect
-              options={CATEGORIES.map((c) => ({ value: c.key, label: c.label }))}
+              options={CATEGORIES.map((c) => ({
+                value: c.key,
+                label: c.label,
+              }))}
               value={activeCat}
               onChange={(value) => setActiveCat(value as CategoryKey)}
             />
@@ -312,6 +335,14 @@ export function OutOfStock() {
           </div>
         ) : error ? (
           <div style={{ padding: 12 }}>{error}</div>
+        ) : paginated.length === 0 ? (
+          <div className={styles.emptyState}>
+            <FiBox className={styles.emptyIcon} />
+            <h3 className={styles.emptyTitle}>Nenhum produto sem estoque</h3>
+            <p className={styles.emptySubtitle}>
+              Todos os produtos estão com estoque disponível no momento.
+            </p>
+          </div>
         ) : (
           <div className={styles.grid}>
             {paginated.map((p) => (

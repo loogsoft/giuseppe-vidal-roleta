@@ -326,6 +326,14 @@ export function DiscountStock() {
               ? Array.from({ length: pageSize }).map((_, i) => (
                   <SkeletonCard key={i} />
                 ))
+              : pagedStockItems.length === 0
+              ? (
+                <div className={styles.emptyState}>
+                  <FiPackage className={styles.emptyIcon} />
+                  <h3 className={styles.emptyTitle}>Nenhum produto em promoção</h3>
+                  <p className={styles.emptySubtitle}>Adicione produtos ao estoque promocional.</p>
+                </div>
+              )
               : pagedStockItems.map((item) => (
                   <EntityCard
                     key={item.id}
@@ -477,7 +485,14 @@ export function DiscountStock() {
             </div>
           </div>
           <div className={styles.cardGrid}>
-            {pagedHistoryItems.map((item) => (
+            {pagedHistoryItems.length === 0 ? (
+              <div className={styles.emptyState}>
+                <FiShoppingBag className={styles.emptyIcon} />
+                <h3 className={styles.emptyTitle}>Nenhuma movimentação registrada</h3>
+                <p className={styles.emptySubtitle}>O histórico de baixas aparecerá aqui.</p>
+              </div>
+            ) : (
+              pagedHistoryItems.map((item) => (
               <EntityCard
                 key={item.id}
                 id={item.id}
@@ -512,7 +527,8 @@ export function DiscountStock() {
                   </>
                 }
               />
-            ))}
+            ))
+            )}
           </div>
           <div className={styles.tableFooter}>
             <div className={styles.tableSummary}>

@@ -291,7 +291,9 @@ export function Dashboard() {
   const [period, setPeriod] = useState<Period>("week");
   const { theme } = useTheme();
   const [stockiten, setStockIten] = useState(0);
-  const [recentMovements, setRecentMovements] = useState<StockMovementResponseDto[]>([]);
+  const [recentMovements, setRecentMovements] = useState<
+    StockMovementResponseDto[]
+  >([]);
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [pageSize, setPageSize] = useState(10);
@@ -313,21 +315,29 @@ export function Dashboard() {
       if (period === "week") {
         return now.getTime() - d.getTime() <= 7 * 24 * 60 * 60 * 1000;
       }
-      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+      return (
+        d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
+      );
     });
   }, [recentMovements, period]);
 
   const totalVendas = useMemo(
-    () => periodMovements.filter((m) => m.type === "OUT").reduce((acc, m) => acc + m.quantity, 0),
-    [periodMovements]
+    () =>
+      periodMovements
+        .filter((m) => m.type === "OUT")
+        .reduce((acc, m) => acc + m.quantity, 0),
+    [periodMovements],
   );
 
   const totalFaturamento = useMemo(
     () =>
       periodMovements
         .filter((m) => m.type === "OUT")
-        .reduce((acc, m) => acc + m.quantity * Number(m.variation?.price ?? 0), 0),
-    [periodMovements]
+        .reduce(
+          (acc, m) => acc + m.quantity * Number(m.variation?.price ?? 0),
+          0,
+        ),
+    [periodMovements],
   );
   const chartColors = {
     primary: "var(--highlight-primary)",
@@ -350,7 +360,8 @@ export function Dashboard() {
     StockMovementService.findAll()
       .then((data) => {
         const sorted = [...data].sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         );
         setRecentMovements(sorted);
       })
@@ -367,8 +378,8 @@ export function Dashboard() {
       list = list.filter(
         (m) =>
           (m.responsibleName || "").toLowerCase().includes(trimmed) ||
-          (m.variation?.name || "").toLowerCase().includes(trimmed) ||
-          m.id.toLowerCase().includes(trimmed)
+          (m.productName || m.variation?.name || "").toLowerCase().includes(trimmed) ||
+          m.id.toLowerCase().includes(trimmed),
       );
     }
     return list;
@@ -442,7 +453,10 @@ export function Dashboard() {
         />
         <StatCard
           label="FATURAMENTO"
-          value={totalFaturamento.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+          value={totalFaturamento.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          })}
           icon={METRIC_ICONS["money"]}
           badgeTone="success"
         />
@@ -528,13 +542,22 @@ export function Dashboard() {
                 type="text"
                 placeholder="Buscar por responsável, produto ou ID..."
                 value={query}
-                onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setPage(1);
+                }}
               />
             </div>
             <CustomSelect
-              options={[5, 10, 20, 50].map((n) => ({ value: String(n), label: String(n) }))}
+              options={[5, 10, 20, 50].map((n) => ({
+                value: String(n),
+                label: String(n),
+              }))}
               value={String(pageSize)}
-              onChange={(v: string) => { setPageSize(Number(v)); setPage(1); }}
+              onChange={(v: string) => {
+                setPageSize(Number(v));
+                setPage(1);
+              }}
             />
           </div>
           <div className={styles.filterActions}>
@@ -545,7 +568,10 @@ export function Dashboard() {
                 { value: "IN", label: "Entrada" },
               ]}
               value={typeFilter}
-              onChange={(v: string) => { setTypeFilter(v); setPage(1); }}
+              onChange={(v: string) => {
+                setTypeFilter(v);
+                setPage(1);
+              }}
             />
           </div>
         </div>
@@ -562,12 +588,26 @@ export function Dashboard() {
           </div>
 
           {paginatedMovements.length === 0 ? (
-            <div style={{ padding: "24px", textAlign: "center", color: "var(--text-muted)" }}>Nenhuma movimentação encontrada.</div>
+            <div
+              style={{
+                padding: "24px",
+                textAlign: "center",
+                color: "var(--text-muted)",
+              }}
+            >
+              Nenhuma movimentação encontrada.
+            </div>
           ) : (
             paginatedMovements.map((r) => {
               const dt = new Date(r.createdAt);
-              const date = dt.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
-              const time = dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+              const date = dt.toLocaleDateString("pt-BR", {
+                day: "2-digit",
+                month: "short",
+              });
+              const time = dt.toLocaleTimeString("pt-BR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
               const initials = (r.responsibleName || "?")
                 .split(" ")
                 .slice(0, 2)
@@ -582,13 +622,21 @@ export function Dashboard() {
                   </div>
                   <div className={styles.clientCell}>
                     <div className={styles.avatar}>{initials}</div>
-                    <div className={styles.clientName}>{r.responsibleName || "-"}</div>
+                    <div className={styles.clientName}>
+                      {r.responsibleName || "-"}
+                    </div>
                   </div>
-                  <div className={styles.productsCell}>{r.variation?.name || "-"}</div>
+                  <div className={styles.productsCell}>
+                    {r.productName || r.variation?.name || "-"}
+                  </div>
                   <div className={styles.totalCell}>{r.quantity}x</div>
                   <div>{r.reason || "-"}</div>
                   <div>
-                    <span className={r.type === "OUT" ? styles.statusOk : styles.statusBad}>
+                    <span
+                      className={
+                        r.type === "OUT" ? styles.statusOk : styles.statusBad
+                      }
+                    >
                       {r.type === "OUT" ? "SAÍDA" : "ENTRADA"}
                     </span>
                   </div>
@@ -600,7 +648,8 @@ export function Dashboard() {
 
         <div className={styles.bottom}>
           <div className={styles.counter}>
-            Mostrando {paginatedMovements.length} de {totalMovements} movimentações
+            Mostrando {paginatedMovements.length} de {totalMovements}{" "}
+            movimentações
           </div>
           <div className={styles.pagination}>
             <button
@@ -625,7 +674,9 @@ export function Dashboard() {
             <button
               className={`${styles.pageBtn} ${currentPage === maxPageMovements ? styles.pageBtnDisabled : ""}`}
               type="button"
-              onClick={() => setPage(Math.min(maxPageMovements, currentPage + 1))}
+              onClick={() =>
+                setPage(Math.min(maxPageMovements, currentPage + 1))
+              }
               disabled={currentPage === maxPageMovements}
               aria-label="Próxima página"
             >

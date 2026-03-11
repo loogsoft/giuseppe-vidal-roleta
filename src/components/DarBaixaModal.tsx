@@ -16,6 +16,7 @@ import styles from "./DarBaixaModal.module.css";
 import type { ProductResponse } from "../dtos/response/product-response.dto";
 import { useAuth } from "../contexts/useAuth";
 import { StockMovementService } from "../service/Stock-movement.service";
+import { useMessageContext } from "../contexts/MessageContext";
 import { CircularProgress } from "@mui/material";
 
 type Props = {
@@ -73,6 +74,7 @@ const PAYMENT_METHODS = [
 export function DarBaixaModal({ isOpen, onClose, product, onConfirm, onClick }: Props) {
   const { user } = useAuth();
   const operatorEmail = user?.email || "";
+  const { checkStockAndNotify } = useMessageContext();
 
   // Sempre monta uma lista de "variações" incluindo o produto principal
   const allVariations = [
@@ -168,6 +170,7 @@ export function DarBaixaModal({ isOpen, onClose, product, onConfirm, onClick }: 
     try {
       if (!selectedVariation?.id) throw new Error("Variação não selecionada");
       await StockMovementService.create({
+        productName: product.name,
         variationId: selectedVariation.id,
         type: "OUT",
         quantity: form.quantity,
@@ -177,6 +180,7 @@ export function DarBaixaModal({ isOpen, onClose, product, onConfirm, onClick }: 
         responsibleName:form.responsible,
         observation: form.observation,
       });
+      await checkStockAndNotify();
       onConfirm({
         ...form,
         operatorEmail,

@@ -3,8 +3,7 @@ import { FiBell, FiMoon, FiSun } from "react-icons/fi";
 import { useTheme } from "../../contexts/useTheme";
 import { useAuth } from "../../contexts/useAuth";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { MessageService } from "../../service/Message.service";
+import { useMessageContext } from "../../contexts/MessageContext";
 
 type HeaderProps = {
   title: string;
@@ -15,16 +14,7 @@ export function Header({ title, isMessageModalOpen }: HeaderProps) {
   const { theme, toggleTheme } = useTheme();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [messageCount, setMessageCount] = useState(0);
-
-  useEffect(() => {
-    const fetch = () => {
-      MessageService.findAll().then((data) => setMessageCount(data.length)).catch(() => {});
-    };
-    fetch();
-    const interval = setInterval(fetch, 30000);
-    return () => clearInterval(interval);
-  }, []);
+  const { messageCount } = useMessageContext();
 
   const userInitial = user?.name
     ? user.name.charAt(0).toUpperCase()
