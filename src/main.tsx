@@ -1,25 +1,14 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
-import App from "./App";
 import "./index.css";
 import "react-toastify/dist/ReactToastify.css";
-import { AuthProvider } from "./contexts/AuthContext";
-import { ThemeProvider } from "./contexts/ThemeContext";
-import { MessageProvider } from "./contexts/MessageContext";
+import Roulette from "./pages/Roulette/Roulette";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ThemeProvider>
-      <AuthProvider>
-        <MessageProvider>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
-        </MessageProvider>
-      </AuthProvider>
-    </ThemeProvider>
-    <ToastContainer position="top-center" autoClose={7000} />
-  </StrictMode>
+    <BrowserRouter>
+      <Roulette />
+    </BrowserRouter>
+  </StrictMode>,
 );
