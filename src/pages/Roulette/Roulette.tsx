@@ -75,7 +75,7 @@ export default function Roulette() {
                   data={premios}
                   backgroundColors={["#23210F", "#FFD600"]}
                   textColors={["#fff"]}
-                  fontSize={20}
+                  fontSize={14}
                   radiusLineColor="#FFD600"
                   radiusLineWidth={2}
                   outerBorderColor="#FFD600"
