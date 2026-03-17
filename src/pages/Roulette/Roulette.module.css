@@ -2,7 +2,7 @@
 .root {
   max-height: 100vh;
   width: 100%;
-  background: #fff;
+  background: #23210F;
   font-family: 'Inter', sans-serif;
   color: #23210f;
   padding: 0;
@@ -58,7 +58,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: #fff;
+  background: #23210F;
 }
 
 /* Roleta */
@@ -72,7 +72,7 @@
   padding: 48px 12px 0 12px;
 }
 .rouletteCard {
-  background: #fff;
+  background: #191711;
   border-radius: 18px;
   padding: 32px 18px 40px 18px;
   width: 100%;
@@ -84,7 +84,7 @@
 }
 .rouletteBadge {
   background: #FFD600;
-  color: #ffffff;
+  color: #23210F;
   font-weight: 700;
   font-size: 15px;
   border-radius: 8px;
@@ -98,11 +98,11 @@
   margin: 0;
   margin-bottom: 10px;
   text-align: center;
-  color: #23210f;
+  color: #FFD600;
   text-shadow: none;
 }
 .rouletteSubtitle {
-  color: #23210f;
+  color: #FFD600;
   font-weight: 500;
   font-size: 16px;
   margin-bottom: 22px;
@@ -123,7 +123,7 @@
   align-items: center;
   justify-content: center;
   filter: none;
-  background: #fff;
+  background: #23210F;
   border-radius: 50%;
   box-shadow: 0 2px 12px rgba(0,0,0,0.07);
 }
@@ -135,7 +135,7 @@
   pointer-events: none;
 }
 .rouletteWheelCenterCircle {
-  background: #fff;
+  background: #191711;
   border: none;
   border-radius: 50%;
   width: 90px;
@@ -217,7 +217,7 @@
   justify-content: flex-start;
 }
 .destaqueCard {
-  background: #fff;
+  background: #191711;
   border-radius: 20px;
   padding: 22px;
   width: 240px;
@@ -259,12 +259,12 @@
 .destaqueNome {
   font-weight: 800;
   font-size: 18px;
-  color: #23210f;
+  color: #FFD600;
   text-align: center;
   margin-bottom: 4px;
 }
 .destaqueDescricao {
-  color: #23210f;
+  color: #FFD600;
   font-size: 14px;
   margin-bottom: 8px;
   text-align: center;
@@ -301,7 +301,7 @@
   align-items: center;
 }
 .eliteCard {
-  background: #fff;
+  background: #191711;
   border-radius: 18px;
   padding: 32px 24px;
   width: 90%;
@@ -314,13 +314,13 @@
 .eliteTitle {
   font-size: 20px;
   font-weight: 700;
-  color: #23210f;
+  color: #FFD600;
   margin: 0;
   margin-bottom: 12px;
   text-align: center;
 }
 .eliteSubtitle {
-  color: #23210f;
+  color: #FFD600;
   font-weight: 500;
   font-size: 12px;
   margin-bottom: 18px;
