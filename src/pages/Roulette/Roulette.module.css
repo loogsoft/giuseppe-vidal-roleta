@@ -2,9 +2,9 @@
 .root {
   max-height: 100vh;
   width: 100%;
-  background: #191711;
+  background: #fff;
   font-family: 'Inter', sans-serif;
-  color: #fff;
+  color: #23210f;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -58,7 +58,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: #191711;
+  background: #fff;
 }
 
 /* Roleta */
@@ -72,23 +72,23 @@
   padding: 48px 12px 0 12px;
 }
 .rouletteCard {
-  background: linear-gradient(180deg, #23210F 80%, #FFD60022 100%);
+  background: #fff;
   border-radius: 18px;
   padding: 32px 18px 40px 18px;
   width: 100%;
-  box-shadow: 0 4px 32px 0 #00000022;
+  box-shadow: 0 41px 32px 10px #00000012;
   display: flex;
   flex-direction: column;
   align-items: center;
-  border: 1.5px solid #FFD600;
+  border: none;
 }
 .rouletteBadge {
   background: #FFD600;
-  color: #191711;
+  color: #ffffff;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 15px;
   border-radius: 8px;
-  padding: 2px 18px;
+  padding: 10px 18px;
   margin-bottom: 22px;
   letter-spacing: 0.5px;
 }
@@ -98,11 +98,11 @@
   margin: 0;
   margin-bottom: 10px;
   text-align: center;
-  color: #fff;
-  text-shadow: 0 0 16px #FFD60055;
+  color: #23210f;
+  text-shadow: none;
 }
 .rouletteSubtitle {
-  color: #FFD600;
+  color: #23210f;
   font-weight: 500;
   font-size: 16px;
   margin-bottom: 22px;
@@ -122,7 +122,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 0 32px #FFD60044);
+  filter: none;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
 }
 .rouletteWheelCenter {
   position: absolute;
@@ -133,14 +136,14 @@
 }
 .rouletteWheelCenterCircle {
   background: #fff;
-  border: 5px solid #FFD600;
+  border: none;
   border-radius: 50%;
   width: 90px;
   height: 90px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 24px #FFD60055;
+  box-shadow: 0 0 12px #FFD60033;
 }
 .rouletteWheelCenterIcon {
   width: 40px;
@@ -148,7 +151,7 @@
 }
 .rouletteSpinButton {
   background: #FFD600;
-  color: #191711;
+  color: #ffffff;
   font-weight: 800;
   font-size: 20px;
   border: none;
@@ -157,12 +160,14 @@
   cursor: pointer;
   box-shadow: 0 4px 24px 0 #FFD60033;
   margin-top: 16px;
-  transition: background 0.2s;
+  transition: filter 0.2s;
   letter-spacing: 1.2px;
 }
 .rouletteSpinButton:disabled {
   cursor: not-allowed;
   opacity: 0.7;
+  background: #f3f3f3;
+  color: #bdbdbd;
 }
 .whatsappButton {
   margin-top: 24px;
@@ -174,8 +179,9 @@
   border-radius: 10px;
   padding: 10px 32px;
   text-decoration: none;
-  box-shadow: 0 2px 12px 0 #25D36633;
+  box-shadow: 0 2px 12px 0 #FFD60033;
   letter-spacing: 0.5px;
+  transition: filter 0.2s;
 }
 
 /* Destaque */
@@ -211,7 +217,7 @@
   justify-content: flex-start;
 }
 .destaqueCard {
-  background: #23210F;
+  background: #fff;
   border-radius: 20px;
   padding: 22px;
   width: 240px;
@@ -219,9 +225,9 @@
   flex-direction: column;
   align-items: center;
   position: relative;
-  box-shadow: 0 1px 12px 0 #00000022;
+  box-shadow: 0 1px 12px 0 #00000012;
   margin-bottom: 18px;
-  border: 1.5px solid #FFD60022;
+  border: none;
 }
 .destaqueTag {
   position: absolute;
@@ -253,12 +259,12 @@
 .destaqueNome {
   font-weight: 800;
   font-size: 18px;
-  color: #fff;
+  color: #23210f;
   text-align: center;
   margin-bottom: 4px;
 }
 .destaqueDescricao {
-  color: #FFD600;
+  color: #23210f;
   font-size: 14px;
   margin-bottom: 8px;
   text-align: center;
@@ -270,8 +276,8 @@
   margin-bottom: 12px;
 }
 .destaqueComprar {
-  background: #FFD600;
-  color: #191711;
+ background: #25D366;
+  color: #ffffff;
   border: none;
   border-radius: 10px;
   padding: 8px 16px;
@@ -281,6 +287,7 @@
   margin-top: auto;
   box-shadow: 0 2px 8px 0 #FFD60022;
   letter-spacing: 0.5px;
+  transition: filter 0.2s;
 }
 
 /* Elite */
@@ -294,26 +301,26 @@
   align-items: center;
 }
 .eliteCard {
-  background: #23210F;
+  background: #fff;
   border-radius: 18px;
   padding: 32px 24px;
   width: 90%;
-  box-shadow: 0 4px 32px 0 #00000022;
+  box-shadow: 0 4px 32px 0 #00000012;
   display: flex;
   flex-direction: column;
   align-items: center;
-  border: 1.5px solid #FFD60022;
+  border: none;
 }
 .eliteTitle {
   font-size: 20px;
   font-weight: 700;
-  color: #FFD600;
+  color: #23210f;
   margin: 0;
   margin-bottom: 12px;
   text-align: center;
 }
 .eliteSubtitle {
-  color: #fff;
+  color: #23210f;
   font-weight: 500;
   font-size: 12px;
   margin-bottom: 18px;
@@ -342,7 +349,7 @@
 }
 .eliteButton {
   background: #FFD600;
-  color: #191711;
+  color: #23210f;
   font-weight: 800;
   font-size: 16px;
   border: none;
@@ -351,6 +358,7 @@
   cursor: pointer;
   box-shadow: 0 2px 8px 0 #FFD60022;
   letter-spacing: 0.5px;
+  transition: filter 0.2s;
 }
 
 /* Footer */
@@ -447,7 +455,6 @@
   }
   .rouletteSpinButton {
   background: #FFD600;
-  color: #191711;
   font-weight: 800;
   font-size: 13px;
   border: none;

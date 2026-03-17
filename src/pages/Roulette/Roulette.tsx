@@ -1,13 +1,9 @@
+
 import { Wheel } from "react-custom-roulette";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "./Roulette.module.css";
-import logo from '../../assets/logo-branco.png'
-const premios = [
-  { option: "FRETE GRÁTIS" },
-  { option: "10% OFF" },
-  { option: "CAMISETA PINHA" },
-  { option: "BRINDE ESPECIAL" },
-];
+import logo from "../../assets/logo-branco.png";
+import { PrizesService } from "../../service/prizes.service";
 
 const produtosDestaque = [
   {
@@ -33,13 +29,26 @@ const produtosDestaque = [
   },
 ];
 
+
 export default function Roulette() {
   const [mustSpin, setMustSpin] = useState(false);
   const [prizeNumber, setPrizeNumber] = useState(0);
   const [giroDisponivel, setGiroDisponivel] = useState(true);
+  const [premios, setPremios] = useState<{ option: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    PrizesService.findAll().then((data) => {
+      const ativos = Array.isArray(data)
+        ? data.filter((p) => p.active !== false)
+        : [];
+      setPremios(ativos.map((p) => ({ option: p.name })));
+      setLoading(false);
+    });
+  }, []);
 
   const handleSpinClick = () => {
-    if (!giroDisponivel) return;
+    if (!giroDisponivel || premios.length === 0) return;
     const newPrize = Math.floor(Math.random() * premios.length);
     setPrizeNumber(newPrize);
     setMustSpin(true);
@@ -61,7 +70,7 @@ export default function Roulette() {
         <section className={styles.rouletteSection}>
           <div className={styles.rouletteCard}>
             <span className={styles.rouletteBadge}>
-              ROLETA DE PRÊMIOS PINHA
+              ROLETA DE PRÊMIOS GIUSEPPE VIDAL
             </span>
             <h1 className={styles.rouletteTitle}>GIRE E GANHE</h1>
             <span className={styles.rouletteSubtitle}>
@@ -69,27 +78,33 @@ export default function Roulette() {
             </span>
             <div className={styles.rouletteWheelWrapper}>
               <div className={styles.rouletteWheelContainer}>
-                <Wheel
-                  mustStartSpinning={mustSpin}
-                  prizeNumber={prizeNumber}
-                  data={premios}
-                  backgroundColors={["#23210F", "#FFD600"]}
-                  textColors={["#fff"]}
-                  fontSize={14}
-                  radiusLineColor="#FFD600"
-                  radiusLineWidth={2}
-                  outerBorderColor="#FFD600"
-                  outerBorderWidth={8}
-                  innerBorderColor="#FFD600"
-                  innerBorderWidth={0}
-                  pointerProps={{ style: { color: "#FFD600" } }}
-                  onStopSpinning={() => {
-                    setMustSpin(false);
-                    setTimeout(() => {
-                      alert(`Você ganhou: ${premios[prizeNumber].option}`);
-                    }, 300);
-                  }}
-                />
+                {loading ? (
+                  <div style={{ color: "#23210F", textAlign: "center", padding: 32 }}>Carregando prêmios...</div>
+                ) : premios.length === 0 ? (
+                  <div style={{ color: "#23210F", textAlign: "center", padding: 32 }}>Nenhum prêmio disponível</div>
+                ) : (
+                  <Wheel
+                    mustStartSpinning={mustSpin}
+                    prizeNumber={prizeNumber}
+                    data={premios}
+                    backgroundColors={["#23210F", "#FFD600"]}
+                    textColors={["#fff"]}
+                    fontSize={14}
+                    radiusLineColor="#FFD600"
+                    radiusLineWidth={2}
+                    outerBorderColor="#FFD600"
+                    outerBorderWidth={8}
+                    innerBorderColor="#FFD600"
+                    innerBorderWidth={0}
+                    pointerProps={{ style: { color: "#FFD600" } }}
+                    onStopSpinning={() => {
+                      setMustSpin(false);
+                      setTimeout(() => {
+                        alert(`Você ganhou: ${premios[prizeNumber].option}`);
+                      }, 300);
+                    }}
+                  />
+                )}
                 <div className={styles.rouletteWheelCenter}>
                   <div className={styles.rouletteWheelCenterCircle}>
                     <img
@@ -103,7 +118,7 @@ export default function Roulette() {
             </div>
             <button
               onClick={handleSpinClick}
-              disabled={!giroDisponivel}
+              disabled={!giroDisponivel || premios.length === 0}
               className={styles.rouletteSpinButton}
             >
               GIRAR AGORA!
@@ -154,7 +169,7 @@ export default function Roulette() {
                 </div>
                 <div className={styles.destaquePreco}>{produto.preco}</div>
                 <button className={styles.destaqueComprar}>
-                  <span style={{ marginRight: 8 }}>🛒</span>Comprar
+                  <span style={{ marginRight: 8 }}>🛒</span>Whatsappe
                 </button>
               </div>
             ))}
@@ -187,22 +202,7 @@ export default function Roulette() {
       <footer className={styles.footer}>
         <div className={styles.footerContent}>
           <div className={styles.footerCol}>
-            <img
-              src="/icon-leaf.svg"
-              alt="Logo"
-              className={styles.footerLogo}
-            />
-            <div className={styles.footerTitle}>PINHA STORE</div>
-            <div className={styles.footerCopy}>© 2026 Pinha Store</div>
-          </div>
-          <div className={styles.footerCol}>
-            <div className={styles.footerColTitle}>Institucional</div>
-            <a className={styles.footerLink} href="#">
-              Sobre
-            </a>
-            <a className={styles.footerLink} href="#">
-              Contato
-            </a>
+            <div className={styles.footerTitle}>GIUSEPPE VIDAL</div>
           </div>
           <div className={styles.footerCol}>
             <div className={styles.footerColTitle}>Redes</div>
